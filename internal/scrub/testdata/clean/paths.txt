@@ -1,0 +1,2 @@
+/Volumes/Extended256/coding/coding-agent-session-sync/internal/adapters/claudecode/claudecode_test.go
+~/.claude/projects/-Volumes-Extended256-coding-coding-agent-session-sync/

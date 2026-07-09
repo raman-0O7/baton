@@ -1,0 +1,2 @@
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N7flQmJE" https://api.example.com/v1
+{"tool":"Bash","output":"api_key: sk-proj-Ab12Cd34Ef56Gh78Ij90KlMn","exit":0}

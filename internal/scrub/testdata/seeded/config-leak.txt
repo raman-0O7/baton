@@ -1,0 +1,3 @@
+database_url = postgres://appuser:Sup3rS3cretPw@db.internal:5432/prod
+{"mcpServers":{"github":{"env":{"API_KEY":"9f8G7h6J5k4L3m2N1p0QrStUvWx"}}}}
+password = correct-horse-battery-staple-99

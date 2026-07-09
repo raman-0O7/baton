@@ -1,0 +1,10 @@
+# Finalized in P9. Stub keeps `goreleaser check` green.
+version: 2
+project_name: agent-sync
+builds:
+  - main: ./cmd/agent-sync
+    env: [CGO_ENABLED=0]
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+archives:
+  - formats: [tar.gz]

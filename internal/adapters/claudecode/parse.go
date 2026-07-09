@@ -214,7 +214,7 @@ func (p *parser) consumeUser(env *lineEnvelope, ts time.Time) {
 		}
 		text = strings.Join(parts, "\n\n")
 	}
-	if text == "" || env.IsMeta {
+	if text == "" || env.IsMeta || isHarnessNoise(text) {
 		return
 	}
 	p.s.Turns = append(p.s.Turns, model.Turn{
@@ -443,6 +443,22 @@ func (p *parser) todoFromTaskUpdate(b *contentBlock) {
 	if idx, ok := p.taskIdx[in.TaskID]; ok && idx < len(p.s.Todos) {
 		p.s.Todos[idx].Status = todoStatus(in.Status)
 	}
+}
+
+// isHarnessNoise reports user-role lines that are harness plumbing rather
+// than something the human typed: slash-command wrappers, background-task
+// notifications, local command output echoes.
+func isHarnessNoise(text string) bool {
+	t := strings.TrimSpace(text)
+	for _, prefix := range []string{
+		"<command-name>", "<task-notification>", "<local-command-stdout>",
+		"<local-command-caveat>", "<bash-input>", "<bash-stdout>",
+	} {
+		if strings.HasPrefix(t, prefix) {
+			return true
+		}
+	}
+	return false
 }
 
 func todoStatus(s string) model.TodoStatus {

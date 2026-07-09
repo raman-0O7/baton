@@ -22,8 +22,6 @@ func (e *NotImplementedError) Error() string {
 func init() {
 	for _, c := range []*cobra.Command{
 		{Use: "disable", Short: "Stop syncing the current project", RunE: notImplemented},
-		{Use: "export", Short: "Produce a cross-agent handoff document from a session", RunE: notImplemented},
-		{Use: "import", Short: "Start a target-agent session primed with a handoff document", RunE: notImplemented},
 		{Use: "daemon", Short: "Run the auto-commit watcher daemon", RunE: notImplemented},
 		{Use: "doctor", Short: "Check agent installs, repo health, and configuration", RunE: notImplemented},
 		{Use: "skills", Short: "Sync agent skills across devices", RunE: notImplemented},

@@ -24,8 +24,6 @@ func init() {
 		{Use: "disable", Short: "Stop syncing the current project", RunE: notImplemented},
 		{Use: "daemon", Short: "Run the auto-commit watcher daemon", RunE: notImplemented},
 		{Use: "doctor", Short: "Check agent installs, repo health, and configuration", RunE: notImplemented},
-		{Use: "skills", Short: "Sync agent skills across devices", RunE: notImplemented},
-		{Use: "mcp", Short: "Sync and translate MCP server configs", RunE: notImplemented},
 	} {
 		rootCmd.AddCommand(c)
 	}

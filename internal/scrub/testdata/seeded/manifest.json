@@ -1,0 +1,26 @@
+{
+  "env-dump.txt": [
+    {"literal": "AKIAIOSFODNN7EXAMPLE", "type": "aws-key"},
+    {"literal": "wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY", "type": "aws-key"}
+  ],
+  "tokens.txt": [
+    {"literal": "ghp_AAAAbbbbCCCCddddEEEEffffGGGGhhhh1234", "type": "github-token"},
+    {"literal": "github_pat_11ABCDEFG0abcdefghijklmnopqrstuvwxyz12345", "type": "github-token"},
+    {"literal": "xoxb-1234567890-abcdefghijklmnop", "type": "slack-token"}
+  ],
+  "curl-json.txt": [
+    {"literal": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N7flQmJE", "type": "bearer-token"},
+    {"literal": "sk-proj-Ab12Cd34Ef56Gh78Ij90KlMn", "type": "generic-api-key"}
+  ],
+  "config-leak.txt": [
+    {"literal": "Sup3rS3cretPw", "type": "connection-string"},
+    {"literal": "9f8G7h6J5k4L3m2N1p0QrStUvWx", "type": "generic-api-key"},
+    {"literal": "correct-horse-battery-staple-99", "type": "generic-api-key"}
+  ],
+  "pem.txt": [
+    {"literal": "MIIEowIBAAKCAQEA7yn3bRHQ5FHMQnE0Xq5V", "type": "pem-block"}
+  ],
+  "entropy.txt": [
+    {"literal": "Zx9Qw2Ee7Rt5Yu1Io3Pp8Aa6Sd4Fg0Hj", "type": "high-entropy"}
+  ]
+}

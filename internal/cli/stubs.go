@@ -21,12 +21,7 @@ func (e *NotImplementedError) Error() string {
 
 func init() {
 	for _, c := range []*cobra.Command{
-		{Use: "init", Short: "Create or clone the sync repo and register this device", RunE: notImplemented},
-		{Use: "enable", Short: "Opt the current project directory into syncing", RunE: notImplemented},
 		{Use: "disable", Short: "Stop syncing the current project", RunE: notImplemented},
-		{Use: "push", Short: "Scrub, commit, and push enabled projects' sessions", RunE: notImplemented},
-		{Use: "pull", Short: "Fetch remote sessions and place them into local agent storage", RunE: notImplemented},
-		{Use: "status", Short: "Show enabled projects, unpushed commits, and forks", RunE: notImplemented},
 		{Use: "export", Short: "Produce a cross-agent handoff document from a session", RunE: notImplemented},
 		{Use: "import", Short: "Start a target-agent session primed with a handoff document", RunE: notImplemented},
 		{Use: "daemon", Short: "Run the auto-commit watcher daemon", RunE: notImplemented},

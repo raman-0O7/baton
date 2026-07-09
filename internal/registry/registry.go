@@ -214,3 +214,37 @@ func (r *Registry) stageTOML(relPath string, v any) error {
 	}
 	return r.store.StageArtifact(relPath, res)
 }
+
+// ListProjects returns every enabled project in the sync repo, regardless
+// of device mapping. Path is left empty — join with a device's path map
+// via ProjectsForDevice for local paths.
+func (r *Registry) ListProjects() ([]Project, error) {
+	paths, err := r.store.PathsUnder("projects/")
+	if err != nil {
+		return nil, err
+	}
+	var out []Project
+	for _, p := range paths {
+		if filepath.Base(p) != "meta.toml" {
+			continue
+		}
+		id := ProjectID(filepath.Base(filepath.Dir(p)))
+		meta, err := r.readMeta(id)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, Project{ID: id, Name: meta.Name, Agents: meta.Agents})
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
+	return out, nil
+}
+
+// DeviceHasPath reports whether the device already maps project id.
+func (r *Registry) DeviceHasPath(dev DeviceID, id ProjectID) (bool, error) {
+	df, err := r.readDevice(dev)
+	if err != nil {
+		return false, err
+	}
+	_, ok := df.PathMap[string(id)]
+	return ok, nil
+}

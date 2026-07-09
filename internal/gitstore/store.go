@@ -82,6 +82,17 @@ func InitOrOpen(repoPath, remoteURL string, device registry.DeviceID) (*Store, e
 			URL:        remoteURL,
 			RemoteName: remoteName,
 		})
+		if errors.Is(err, plumbing.ErrReferenceNotFound) {
+			// The remote's HEAD symref dangles (e.g. `git init --bare`
+			// defaulting to master while we sync on main). Retry pinned to
+			// our branch; a leftover half-initialized dir must go first.
+			_ = os.RemoveAll(repoPath)
+			repo, err = git.PlainClone(repoPath, false, &git.CloneOptions{
+				URL:           remoteURL,
+				RemoteName:    remoteName,
+				ReferenceName: plumbing.Main,
+			})
+		}
 		if err == nil {
 			return &Store{repo: repo, repoPath: repoPath, device: device}, nil
 		}
@@ -231,6 +242,13 @@ func (s *Store) Push() error {
 	}
 }
 
+// IsNonFastForward reports whether err is a push rejection caused by the
+// remote having commits we have not integrated yet. Callers Pull (fork-on-
+// conflict) and retry. go-git exposes this only as error text.
+func IsNonFastForward(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "non-fast-forward update")
+}
+
 // ReadArtifact returns the current worktree content at relPath (staged
 // writes included). The error satisfies errors.Is(err, fs.ErrNotExist)
 // when the artifact does not exist.
@@ -326,4 +344,46 @@ func (s *Store) blobBytes(h plumbing.Hash) ([]byte, error) {
 	}
 	defer r.Close()
 	return io.ReadAll(r)
+}
+
+// Ahead reports how many local commits are not yet on origin's branch.
+// Returns 0 with ok=false when there is no remote-tracking state to
+// compare against (no remote, never fetched, or unborn local branch).
+func (s *Store) Ahead() (n int, ok bool, err error) {
+	remoteHash, has := s.remoteHead()
+	if !has {
+		return 0, false, nil
+	}
+	headRef, err := s.repo.Head()
+	if err != nil {
+		return 0, false, nil
+	}
+	localC, err := s.repo.CommitObject(headRef.Hash())
+	if err != nil {
+		return 0, false, err
+	}
+	remoteC, err := s.repo.CommitObject(remoteHash)
+	if err != nil {
+		return 0, false, err
+	}
+	bases, err := localC.MergeBase(remoteC)
+	if err != nil || len(bases) == 0 {
+		return 0, false, err
+	}
+	stop := map[string]bool{}
+	for _, b := range bases {
+		stop[b.Hash.String()] = true
+	}
+	iter := object.NewCommitPreorderIter(localC, nil, nil)
+	for {
+		c, err := iter.Next()
+		if err != nil {
+			break
+		}
+		if stop[c.Hash.String()] {
+			break
+		}
+		n++
+	}
+	return n, true, nil
 }

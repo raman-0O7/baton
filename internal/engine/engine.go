@@ -19,6 +19,8 @@ import (
 
 	// Adapters register themselves; the engine reaches them by name only.
 	_ "agent-sync/internal/adapters/claudecode"
+	_ "agent-sync/internal/adapters/codex"
+	_ "agent-sync/internal/adapters/opencode"
 )
 
 // ErrNotInitialized is returned by Open before `agent-sync init` has run.

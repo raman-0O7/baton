@@ -1,0 +1,24 @@
+{
+  "id": "ses_basic0000000000000000",
+  "agent": "opencode",
+  "project_id": "",
+  "title": "Go directory listing question",
+  "turns": [
+    {
+      "role": "user",
+      "text": "How do I list files in a directory in Go?",
+      "timestamp": "2026-07-02T13:46:41Z"
+    },
+    {
+      "role": "assistant",
+      "text": "Use os.ReadDir — it returns entries sorted by filename.",
+      "timestamp": "2026-07-02T13:46:45Z"
+    }
+  ],
+  "meta": {
+    "created_at": "2026-07-02T13:46:40Z",
+    "updated_at": "2026-07-02T13:47:40Z",
+    "format_version": "2026-07-db",
+    "forked_at": "0001-01-01T00:00:00Z"
+  }
+}

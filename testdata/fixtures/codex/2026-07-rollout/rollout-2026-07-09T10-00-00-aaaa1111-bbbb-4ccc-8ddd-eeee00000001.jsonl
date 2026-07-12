@@ -1,0 +1,5 @@
+{"timestamp":"2026-07-09T10:00:00.000Z","type":"session_meta","payload":{"id":"aaaa1111-bbbb-4ccc-8ddd-eeee00000001","timestamp":"2026-07-09T10:00:00.000Z","cwd":"/home/user/project","originator":"codex_cli_rs","cli_version":"0.29.0","instructions":null}}
+{"timestamp":"2026-07-09T10:00:01.000Z","type":"turn_context","payload":{"cwd":"/home/user/project","model":"gpt-5-codex"}}
+{"timestamp":"2026-07-09T10:00:02.000Z","type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"<environment_context>shell: zsh</environment_context>"}]}}
+{"timestamp":"2026-07-09T10:00:03.000Z","type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"How do I list files in a directory in Go?"}]}}
+{"timestamp":"2026-07-09T10:00:08.000Z","type":"response_item","payload":{"type":"message","role":"assistant","content":[{"type":"output_text","text":"Use os.ReadDir — it returns entries sorted by filename."}]}}

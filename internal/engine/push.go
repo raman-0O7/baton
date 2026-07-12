@@ -66,6 +66,16 @@ func unmarshalArtifact(data []byte) (*model.Session, error) {
 // be base64 and invisible to the scanner), then once over the marshaled
 // IR JSON as a belt for text fields (SR-1).
 func (e *Engine) Push() (PushReport, error) {
+	return e.push(true)
+}
+
+// CommitOnly stages and commits without pushing — the daemon's fast path
+// when the push schedule is interval/manual (P7).
+func (e *Engine) CommitOnly() (PushReport, error) {
+	return e.push(false)
+}
+
+func (e *Engine) push(pushNow bool) (PushReport, error) {
 	var rep PushReport
 	dev := registry.DeviceID(e.Cfg.DeviceID)
 	projects, err := e.Reg.ProjectsForDevice(dev)
@@ -122,6 +132,9 @@ func (e *Engine) Push() (PushReport, error) {
 		return rep, err
 	}
 	rep.Committed = staged
+	if !pushNow {
+		return rep, nil
+	}
 	pullRep, err := e.pushBestEffort()
 	if err != nil {
 		return rep, err

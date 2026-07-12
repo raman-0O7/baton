@@ -22,7 +22,6 @@ func (e *NotImplementedError) Error() string {
 func init() {
 	for _, c := range []*cobra.Command{
 		{Use: "disable", Short: "Stop syncing the current project", RunE: notImplemented},
-		{Use: "daemon", Short: "Run the auto-commit watcher daemon", RunE: notImplemented},
 		{Use: "doctor", Short: "Check agent installs, repo health, and configuration", RunE: notImplemented},
 	} {
 		rootCmd.AddCommand(c)

@@ -7,7 +7,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"agent-sync/internal/model"
+	"github.com/raman-0O7/baton/internal/model"
 )
 
 // --- claudecode: {"mcpServers": {name: {command, args, env, type, url, headers}}}

@@ -14,7 +14,7 @@ const (
 // are emitted from / parsed into this by internal/mcptrans.
 //
 // Secret values never appear here: Env values are placeholder references
-// (e.g. "$AGENT_SYNC_SECRET:openai_api_key") resolved from the device-local
+// (e.g. "$BATON_SECRET:openai_api_key") resolved from the device-local
 // secrets file at emit time (SR-2).
 type MCPServer struct {
 	Name      string            `json:"name" toml:"name"`

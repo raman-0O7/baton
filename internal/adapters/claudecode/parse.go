@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/model"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/model"
 )
 
 // maxLineBytes bounds a single JSONL line. Tool payloads (Write inputs,

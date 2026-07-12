@@ -13,9 +13,9 @@ import (
 	"strings"
 	"unicode/utf16"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/model"
-	"agent-sync/internal/registry"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/model"
+	"github.com/raman-0O7/baton/internal/registry"
 )
 
 // formatVersion identifies the native schema this parser targets: the JSONL

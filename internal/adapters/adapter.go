@@ -9,8 +9,8 @@ import (
 	"sort"
 	"sync"
 
-	"agent-sync/internal/model"
-	"agent-sync/internal/registry"
+	"github.com/raman-0O7/baton/internal/model"
+	"github.com/raman-0O7/baton/internal/registry"
 )
 
 // ErrNotSupported is returned by adapters for operations they legitimately

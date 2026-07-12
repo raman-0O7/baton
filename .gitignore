@@ -1,4 +1,4 @@
-/agent-sync
+/baton
 /dist/
 *.test
 coverage.out

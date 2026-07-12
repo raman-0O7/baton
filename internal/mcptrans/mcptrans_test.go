@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"agent-sync/internal/model"
+	"github.com/raman-0O7/baton/internal/model"
 )
 
 func sample() []model.MCPServer {
@@ -13,12 +13,12 @@ func sample() []model.MCPServer {
 		{
 			Name: "github", Transport: model.MCPStdio,
 			Command: "npx", Args: []string{"-y", "@modelcontextprotocol/server-github"},
-			Env: map[string]string{"GITHUB_TOKEN": "$AGENT_SYNC_SECRET:github_GITHUB_TOKEN"},
+			Env: map[string]string{"GITHUB_TOKEN": "$BATON_SECRET:github_GITHUB_TOKEN"},
 		},
 		{
 			Name: "search", Transport: model.MCPHTTP,
 			URL:     "https://mcp.example.com/v1",
-			Headers: map[string]string{"X-Api-Key": "$AGENT_SYNC_SECRET:search_X_Api_Key"},
+			Headers: map[string]string{"X-Api-Key": "$BATON_SECRET:search_X_Api_Key"},
 		},
 	}
 }

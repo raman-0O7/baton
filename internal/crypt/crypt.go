@@ -53,7 +53,7 @@ func Encrypt(data []byte, recipientKeys []string) ([]byte, error) {
 }
 
 // Decrypt opens an age ciphertext with the identity file at identityPath
-// (age-keygen output; default ~/.config/agent-sync/age.key).
+// (age-keygen output; default ~/.config/baton/age.key).
 func Decrypt(data []byte, identityPath string) ([]byte, error) {
 	f, err := os.Open(identityPath)
 	if err != nil {
@@ -71,7 +71,7 @@ func Decrypt(data []byte, identityPath string) ([]byte, error) {
 	return io.ReadAll(r)
 }
 
-// DefaultIdentityPath is where `agent-sync init --encrypt` places the key.
+// DefaultIdentityPath is where `baton init --encrypt` places the key.
 func DefaultIdentityPath() (string, error) {
 	base := os.Getenv("XDG_CONFIG_HOME")
 	if base == "" {
@@ -81,7 +81,7 @@ func DefaultIdentityPath() (string, error) {
 		}
 		base = filepath.Join(home, ".config")
 	}
-	return filepath.Join(base, "agent-sync", "age.key"), nil
+	return filepath.Join(base, "baton", "age.key"), nil
 }
 
 // GenerateIdentity creates a new X25519 identity, writes it 0600 to path,
@@ -94,7 +94,7 @@ func GenerateIdentity(path string) (recipient string, err error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return "", err
 	}
-	body := fmt.Sprintf("# agent-sync age identity — back this up; without it your synced data is unrecoverable\n%s\n", id.String())
+	body := fmt.Sprintf("# baton age identity — back this up; without it your synced data is unrecoverable\n%s\n", id.String())
 	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
 		return "", err
 	}

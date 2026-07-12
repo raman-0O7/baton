@@ -8,11 +8,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/config"
-	"agent-sync/internal/crypt"
-	"agent-sync/internal/engine"
-	"agent-sync/internal/registry"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/config"
+	"github.com/raman-0O7/baton/internal/crypt"
+	"github.com/raman-0O7/baton/internal/engine"
+	"github.com/raman-0O7/baton/internal/registry"
 )
 
 func init() {
@@ -45,7 +45,7 @@ func init() {
 			initialized := cfg.DeviceID != ""
 			ok(initialized, "device initialized", cfg.DeviceID)
 			if !initialized {
-				fmt.Println("\nrun `agent-sync init` to set up this device")
+				fmt.Println("\nrun `baton init` to set up this device")
 				return nil
 			}
 

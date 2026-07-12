@@ -9,8 +9,8 @@ import (
 
 	git "github.com/go-git/go-git/v5"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/registry"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/registry"
 )
 
 // device is one simulated machine: its own HOME and config.

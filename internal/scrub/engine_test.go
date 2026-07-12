@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"agent-sync/internal/model"
+	"github.com/raman-0O7/baton/internal/model"
 )
 
 type seed struct {

@@ -10,8 +10,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"agent-sync/internal/daemon"
-	"agent-sync/internal/engine"
+	"github.com/raman-0O7/baton/internal/daemon"
+	"github.com/raman-0O7/baton/internal/engine"
 )
 
 func init() {
@@ -56,12 +56,12 @@ use the printed launchd/systemd template to install it as a service.`,
 	rootCmd.AddCommand(daemonCmd)
 }
 
-const serviceTemplate = `# macOS: save as ~/Library/LaunchAgents/dev.agent-sync.daemon.plist
-# then: launchctl load ~/Library/LaunchAgents/dev.agent-sync.daemon.plist
+const serviceTemplate = `# macOS: save as ~/Library/LaunchAgents/dev.baton.daemon.plist
+# then: launchctl load ~/Library/LaunchAgents/dev.baton.daemon.plist
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-  <key>Label</key><string>dev.agent-sync.daemon</string>
+  <key>Label</key><string>dev.baton.daemon</string>
   <key>ProgramArguments</key><array>
     <string>%[1]s</string><string>daemon</string>
   </array>
@@ -69,10 +69,10 @@ const serviceTemplate = `# macOS: save as ~/Library/LaunchAgents/dev.agent-sync.
   <key>KeepAlive</key><true/>
 </dict></plist>
 
-# Linux: save as ~/.config/systemd/user/agent-sync.service
-# then: systemctl --user enable --now agent-sync
+# Linux: save as ~/.config/systemd/user/baton.service
+# then: systemctl --user enable --now baton
 [Unit]
-Description=agent-sync auto-commit daemon
+Description=baton auto-commit daemon
 
 [Service]
 ExecStart=%[1]s daemon

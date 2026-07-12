@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"agent-sync/internal/engine"
+	"github.com/raman-0O7/baton/internal/engine"
 )
 
 func init() {

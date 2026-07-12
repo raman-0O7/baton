@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"agent-sync/internal/cli"
+	"github.com/raman-0O7/baton/internal/cli"
 )
 
 // version is stamped by goreleaser via -ldflags "-X main.version=...".

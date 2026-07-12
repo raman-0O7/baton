@@ -15,12 +15,12 @@ import (
 	"sort"
 	"strings"
 
-	"agent-sync/internal/model"
+	"github.com/raman-0O7/baton/internal/model"
 )
 
 // PlaceholderPrefix marks a value that must be resolved from the local
-// secrets store: "$AGENT_SYNC_SECRET:<server>_<key>".
-const PlaceholderPrefix = "$AGENT_SYNC_SECRET:"
+// secrets store: "$BATON_SECRET:<server>_<key>".
+const PlaceholderPrefix = "$BATON_SECRET:"
 
 // secretKeyHints flag env/header keys whose values are credentials.
 var secretKeyHints = []string{"key", "token", "secret", "password", "passwd", "auth", "credential"}

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/model"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/model"
 )
 
 const maxLineBytes = 32 << 20

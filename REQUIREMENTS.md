@@ -1,7 +1,7 @@
 # Requirements: Coding-Agent Session Sync
 
 **Status:** Draft v1 — decisions locked via design interview, 2026-07-09
-**Working name:** `agent-sync` (final name TBD)
+**Working name:** `baton` (final name TBD)
 
 ## 1. Problem Statement
 
@@ -32,7 +32,7 @@ Both capabilities are part of the v1 vision; they ship in sequence (see §9 Mile
 | 7 | Conflict model | **Fork-on-conflict** — divergent session histories become sibling sessions; no data loss, no locks |
 | 8 | Sync triggers | **File-watcher daemon** auto-commits after each settled turn; push is configurable (interval / session-end / manual) |
 | 9 | Skill & MCP sync scope | Cross-device same-agent replication for skills; **MCP configs additionally translate across agents** (mechanical mapping). Cross-agent skill translation deferred to v2 |
-| 10 | Data layout | **Opt-in per project** (`agent-sync enable`), all enabled projects in **one private sync repo**, per-device path-mapping table |
+| 10 | Data layout | **Opt-in per project** (`baton enable`), all enabled projects in **one private sync repo**, per-device path-mapping table |
 | 11 | Stack | **Go, single static binary** — cobra (CLI), fsnotify (daemon), go-git (git layer). Distribution: Homebrew, curl-sh, GitHub Releases |
 | 12 | Build order | M1 cross-device sync → M2 cross-agent handoff → M3 daemon + skills/MCP |
 | 13 | License | **Open source, MIT or Apache-2.0** |
@@ -41,23 +41,23 @@ Both capabilities are part of the v1 vision; they ship in sequence (see §9 Mile
 
 ### 4.1 Cross-device session sync (M1)
 
-- **FR-1** `agent-sync init` — create/clone the sync repo, configure the git remote, register this device (device ID + path-mapping entry).
-- **FR-2** `agent-sync enable` — opt the current project directory into syncing. Nothing syncs without explicit enable.
-- **FR-3** `agent-sync push` / `agent-sync pull` — manual sync of enabled projects' sessions to/from the remote.
-- **FR-4** `agent-sync status` — show enabled projects, unpushed commits, remote divergence, active forks.
+- **FR-1** `baton init` — create/clone the sync repo, configure the git remote, register this device (device ID + path-mapping entry).
+- **FR-2** `baton enable` — opt the current project directory into syncing. Nothing syncs without explicit enable.
+- **FR-3** `baton push` / `baton pull` — manual sync of enabled projects' sessions to/from the remote.
+- **FR-4** `baton status` — show enabled projects, unpushed commits, remote divergence, active forks.
 - **FR-5 Path mapping.** Agents key session storage by absolute project path (e.g. Claude Code: `~/.claude/projects/<path-slug>/`). The sync repo stores sessions under a stable project ID; on pull, the tool rewrites/places sessions into the device-local storage path so the agent's own `--resume`/session list sees them. The per-device path map lives in the sync repo.
 - **FR-6 Fork-on-conflict.** When push detects divergent history for the same session, the tool preserves both timelines as sibling sessions (clear naming: origin device + timestamp). Never overwrite, never block on locks. `status` lists forks.
 - **FR-7 Session parser: claude-code.** Read/write session JSONL under `~/.claude/projects/`. Parsers are versioned and behind a plugin interface (Go interface; community parsers can be added without touching core).
 
 ### 4.2 Cross-agent handoff (M2)
 
-- **FR-8** `agent-sync export --to <agent>` — produce a **handoff document** from the current/selected session containing, extracted mechanically (no LLM call):
+- **FR-8** `baton export --to <agent>` — produce a **handoff document** from the current/selected session containing, extracted mechanically (no LLM call):
   - original task / user messages (verbatim),
   - files created/edited with diffs or summaries of tool activity,
   - todo/plan state if present in the session,
   - last N conversational turns verbatim (configurable),
   - explicit "you are continuing this work" preamble addressed to the target agent.
-- **FR-9** `agent-sync import` (or copy-paste flow) — start a session in the target agent primed with the handoff document. v1 may simply emit the document + the exact launch command; deeper integration later.
+- **FR-9** `baton import` (or copy-paste flow) — start a session in the target agent primed with the handoff document. v1 may simply emit the document + the exact launch command; deeper integration later.
 - **FR-10 Session parsers: opencode, codex.** Export-side read support for opencode's local session storage and Codex CLI's `~/.codex/sessions/`.
 - **FR-11 Native injection (post-v1, best-effort).** Per-agent adapters that convert a transcript into the target agent's native session format so it appears in its session list. Explicitly best-effort: gated per agent on format stability, allowed to lag agent releases.
 
@@ -65,7 +65,7 @@ Both capabilities are part of the v1 vision; they ship in sequence (see §9 Mile
 
 - **FR-12 Skill replication.** Sync each agent's skill/prompt/config directories (e.g. `~/.claude/skills/`, project `.claude/skills/`, opencode equivalents, `~/.codex/` prompts) across devices, same-agent only.
 - **FR-13 MCP config translation.** Maintain a canonical MCP server list (server name, transport, command/URL, arg schema). Emit per-agent config syntax (`.mcp.json`, opencode config, codex `config.toml`). Secret values are referenced by placeholder and resolved from a device-local, never-synced secrets file.
-- **FR-14 Daemon.** `agent-sync daemon` — fsnotify watcher on enabled agents' storage dirs; debounced auto-commit after a turn's writes settle; push per user config (every commit / interval / session end / manual only).
+- **FR-14 Daemon.** `baton daemon` — fsnotify watcher on enabled agents' storage dirs; debounced auto-commit after a turn's writes settle; push per user config (every commit / interval / session end / manual only).
 
 ## 5. Security & Privacy Requirements
 

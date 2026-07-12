@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"sort"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/handoff"
-	"agent-sync/internal/model"
-	"agent-sync/internal/registry"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/handoff"
+	"github.com/raman-0O7/baton/internal/model"
+	"github.com/raman-0O7/baton/internal/registry"
 )
 
 // Export builds a handoff document from a local session of the project at
@@ -19,7 +19,7 @@ func (e *Engine) Export(projectPath, fromAgent, sessionID string, opts handoff.O
 		return "", nil, err
 	}
 	if !ok {
-		return "", nil, fmt.Errorf("project at %s is not enabled (run `agent-sync enable`)", projectPath)
+		return "", nil, fmt.Errorf("project at %s is not enabled (run `baton enable`)", projectPath)
 	}
 	adapter, err := adapters.Get(fromAgent)
 	if err != nil {

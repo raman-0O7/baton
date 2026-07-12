@@ -12,10 +12,10 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/config"
-	"agent-sync/internal/engine"
-	"agent-sync/internal/registry"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/config"
+	"github.com/raman-0O7/baton/internal/engine"
+	"github.com/raman-0O7/baton/internal/registry"
 )
 
 // Options tunes the daemon. Zero values take config/schedule defaults.

@@ -95,7 +95,7 @@ func TestSkillsAndMCPTwoDevices(t *testing.T) {
 	if strings.Contains(out, "ghp_SEEDEDSECRET000000000000000000000001") {
 		t.Fatal("secret value materialized on a device that never had it")
 	}
-	if !strings.Contains(out, "$AGENT_SYNC_SECRET:github_GITHUB_TOKEN") || !strings.Contains(out, `"github"`) {
+	if !strings.Contains(out, "$BATON_SECRET:github_GITHUB_TOKEN") || !strings.Contains(out, `"github"`) {
 		t.Fatalf("emitted opencode config unexpected:\n%s", out)
 	}
 	// Non-secret env survives translation.

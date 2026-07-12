@@ -13,9 +13,9 @@ import (
 
 	_ "modernc.org/sqlite"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/model"
-	"agent-sync/internal/registry"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/model"
+	"github.com/raman-0O7/baton/internal/registry"
 )
 
 const formatVersion = "2026-07-db"

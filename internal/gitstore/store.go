@@ -27,9 +27,9 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 
-	"agent-sync/internal/crypt"
-	"agent-sync/internal/registry"
-	"agent-sync/internal/scrub"
+	"github.com/raman-0O7/baton/internal/crypt"
+	"github.com/raman-0O7/baton/internal/registry"
+	"github.com/raman-0O7/baton/internal/scrub"
 )
 
 // ErrNoRemote is returned by Push and Pull when no "origin" remote is
@@ -40,7 +40,7 @@ const (
 	remoteName = "origin"
 	// syncRepoMeta is committed on first init (repo format version "1").
 	syncRepoMetaPath = "syncrepo.toml"
-	syncRepoMetaBody = "# agent-sync sync-repo metadata. Do not edit by hand.\nformat = \"1\"\n"
+	syncRepoMetaBody = "# baton sync-repo metadata. Do not edit by hand.\nformat = \"1\"\n"
 )
 
 // Store is bound to the local sync-repo clone at repoPath and knows which
@@ -145,7 +145,7 @@ func (s *Store) writeInitialCommit() error {
 	if err := s.StageArtifact(syncRepoMetaPath, res); err != nil {
 		return err
 	}
-	staged, err := s.Commit("agent-sync: initialize sync repo (format version 1)")
+	staged, err := s.Commit("baton: initialize sync repo (format version 1)")
 	if err != nil {
 		return err
 	}
@@ -334,8 +334,8 @@ func (s *Store) paths(relPath string) (rel, full string, err error) {
 // signature identifies this device as commit author.
 func (s *Store) signature() *object.Signature {
 	return &object.Signature{
-		Name:  "agent-sync (" + string(s.device) + ")",
-		Email: string(s.device) + "@agent-sync.local",
+		Name:  "baton (" + string(s.device) + ")",
+		Email: string(s.device) + "@baton.local",
 		When:  time.Now(),
 	}
 }

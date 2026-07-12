@@ -1,4 +1,4 @@
-# agent-sync
+# baton
 
 Sync AI coding-agent sessions, skills, and MCP server configs across
 devices — and hand off an in-progress session from one agent to another
@@ -13,48 +13,48 @@ GitHub/Gitea repo). No accounts, no hosted service, fully offline-capable.
 
 Grab the binary for your OS from
 [Releases](../../releases/latest) and put it on your PATH — that's the
-whole install. Or with Go: `go install <module>/cmd/agent-sync@latest`.
+whole install. Or with Go: `go install <module>/cmd/baton@latest`.
 
 ## Why
 
 - **Rate-limit stranding.** Your Claude Code quota runs out mid-task; the
-  accumulated context is trapped. `agent-sync export --to opencode`
+  accumulated context is trapped. `baton export --to opencode`
   produces a mechanical handoff document (no LLM call — your quota is
   exactly what just died) that the next agent ingests and continues from.
-- **Device stranding.** Sessions live on one machine. `agent-sync push`
-  on the desktop, `agent-sync pull` on the laptop, `claude --resume`
+- **Device stranding.** Sessions live on one machine. `baton push`
+  on the desktop, `baton pull` on the laptop, `claude --resume`
   shows the same session at the laptop's own project path.
 
 ## Quick start
 
 ```console
 # one-time, per device
-agent-sync init --remote git@github.com:you/agent-sync-data.git
+baton init --remote git@github.com:you/baton-data.git
 
 # per project, per device
 cd ~/code/myproject
-agent-sync enable
+baton enable
 
 # work with your agent, then
-agent-sync push        # scrub → commit → push
+baton push        # scrub → commit → push
 # on another device
-agent-sync pull        # place sessions into local agent storage
+baton pull        # place sessions into local agent storage
 claude --resume        # continue
 
 # limit hit? hand off to another agent
-agent-sync export --to opencode
+baton export --to opencode
 opencode run "$(cat handoff.md)"
 
 # zero-touch mode
-agent-sync daemon      # or: agent-sync daemon install-template
+baton daemon      # or: baton daemon install-template
 ```
 
 Skills and MCP configs:
 
 ```console
-agent-sync skills push / pull          # replicate skill dirs per agent
-agent-sync mcp import --agent claudecode --path .mcp.json
-agent-sync mcp emit --agent codex      # translate to another agent's syntax
+baton skills push / pull          # replicate skill dirs per agent
+baton mcp import --agent claudecode --path .mcp.json
+baton mcp emit --agent codex      # translate to another agent's syntax
 ```
 
 ## Security model
@@ -66,7 +66,7 @@ agent-sync mcp emit --agent codex      # translate to another agent's syntax
 - **MCP secrets never sync.** Credential values are externalized to a
   device-local, 0600, never-synced `secrets.toml` and travel as
   placeholders.
-- **Optional end-to-end encryption.** `agent-sync init --encrypt`
+- **Optional end-to-end encryption.** `baton init --encrypt`
   generates an age identity; artifacts are sealed after scrubbing, so the
   git host sees opaque blobs. Trade-off: no remote-side diffs.
 - **Fork, never merge.** Divergent session timelines are both preserved

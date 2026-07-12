@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/scrub"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/scrub"
 )
 
 // skillRoots maps agent → user-level skill/prompt directories, relative to

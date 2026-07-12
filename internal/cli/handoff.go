@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"agent-sync/internal/engine"
-	"agent-sync/internal/handoff"
+	"github.com/raman-0O7/baton/internal/engine"
+	"github.com/raman-0O7/baton/internal/handoff"
 )
 
 func init() {

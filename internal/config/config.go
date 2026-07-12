@@ -1,5 +1,5 @@
 // Package config loads the tool's own configuration (not agent configs).
-// Location: $XDG_CONFIG_HOME/agent-sync/config.toml, overridable via --config.
+// Location: $XDG_CONFIG_HOME/baton/config.toml, overridable via --config.
 package config
 
 import (
@@ -24,7 +24,7 @@ const (
 
 // Config is the on-disk tool configuration.
 type Config struct {
-	// RepoPath is the local clone of the sync repo. Default: ~/.agent-sync/repo.
+	// RepoPath is the local clone of the sync repo. Default: ~/.baton/repo.
 	RepoPath string `toml:"repo_path"`
 	// Remote is the git remote URL for the sync repo.
 	Remote string `toml:"remote"`
@@ -66,7 +66,7 @@ func Path() (string, error) {
 		}
 		base = filepath.Join(home, ".config")
 	}
-	return filepath.Join(base, "agent-sync", "config.toml"), nil
+	return filepath.Join(base, "baton", "config.toml"), nil
 }
 
 // Defaults returns a Config with defaults applied.
@@ -76,7 +76,7 @@ func Defaults() (Config, error) {
 		return Config{}, err
 	}
 	return Config{
-		RepoPath:        filepath.Join(home, ".agent-sync", "repo"),
+		RepoPath:        filepath.Join(home, ".baton", "repo"),
 		Push:            PushConfig{Mode: PushSessionEnd, IntervalMinutes: 15},
 		DebounceSeconds: 5,
 	}, nil

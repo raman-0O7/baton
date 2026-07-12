@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"agent-sync/internal/config"
+	"github.com/raman-0O7/baton/internal/config"
 )
 
 var (
@@ -17,9 +17,9 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "agent-sync",
+	Use:   "baton",
 	Short: "Sync AI coding agent sessions, skills, and MCP configs across devices and agents",
-	Long: `agent-sync replicates coding-agent sessions (claude-code, opencode, codex)
+	Long: `baton replicates coding-agent sessions (claude-code, opencode, codex)
 across devices via a git remote you own, and hands off in-progress sessions
 between agents when usage limits strike.`,
 	SilenceUsage:  true,
@@ -46,5 +46,5 @@ func SetVersion(v string) {
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&flagVerbose, "verbose", "v", false, "enable debug logging")
-	rootCmd.PersistentFlags().StringVar(&flagConfig, "config", "", "path to config file (default: $XDG_CONFIG_HOME/agent-sync/config.toml)")
+	rootCmd.PersistentFlags().StringVar(&flagConfig, "config", "", "path to config file (default: $XDG_CONFIG_HOME/baton/config.toml)")
 }

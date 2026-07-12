@@ -11,7 +11,7 @@ testdata/fixtures/<agent>/<format-version>/
 Rules:
 
 - **Never commit an unsanitized transcript.** Strip real paths outside the
-  fixture project, all tokens/keys, personal data. Run `agent-sync doctor
+  fixture project, all tokens/keys, personal data. Run `baton doctor
   --scan <file>` (P9) or manual review before adding.
 - `<format-version>` matches the adapter's `FormatVersion()` that parses it.
 - Golden files are regenerated only deliberately (`go test ./... -update`),

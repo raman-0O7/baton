@@ -12,9 +12,9 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 
-	"agent-sync/internal/gitstore"
-	"agent-sync/internal/registry"
-	"agent-sync/internal/scrub"
+	"github.com/raman-0O7/baton/internal/gitstore"
+	"github.com/raman-0O7/baton/internal/registry"
+	"github.com/raman-0O7/baton/internal/scrub"
 )
 
 // newBareOrigin creates the temp bare repo standing in for the user's git

@@ -3,8 +3,8 @@ package engine
 import (
 	"strings"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/registry"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/registry"
 )
 
 // ProjectStatus is the per-project slice of a Status report.
@@ -15,7 +15,7 @@ type ProjectStatus struct {
 	Forks         []string       // fork artifacts awaiting attention
 }
 
-// Status is the full `agent-sync status` report.
+// Status is the full `baton status` report.
 type Status struct {
 	DeviceID   string
 	Remote     string

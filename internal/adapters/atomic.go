@@ -21,7 +21,7 @@ func AtomicWrite(path string, data []byte) error {
 			return fmt.Errorf("backup before overwrite: %w", err)
 		}
 	}
-	tmp, err := os.CreateTemp(dir, ".agent-sync-*")
+	tmp, err := os.CreateTemp(dir, ".baton-*")
 	if err != nil {
 		return err
 	}

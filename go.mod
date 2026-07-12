@@ -1,4 +1,4 @@
-module agent-sync
+module github.com/raman-0O7/baton
 
 go 1.26.5
 

@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/model"
-	"agent-sync/internal/registry"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/model"
+	"github.com/raman-0O7/baton/internal/registry"
 )
 
 var update = flag.Bool("update", false, "regenerate golden files")

@@ -1,4 +1,4 @@
-# Implementation Plan: agent-sync
+# Implementation Plan: baton
 
 **Status:** Draft v1 — 2026-07-09
 **Source of truth for scope:** `REQUIREMENTS.md` (13 locked decisions). This document covers *how* and *in what order*.
@@ -44,7 +44,7 @@
    │ ~/.codex/sessions/…                         │
    └─────────────────────────────────────────────┘
 
-   Sync repo (local clone ~/.agent-sync/repo) ⇄ user's git remote
+   Sync repo (local clone ~/.baton/repo) ⇄ user's git remote
 ```
 
 ### 1.1 Design principles
@@ -58,8 +58,8 @@
 ### 1.2 Source tree
 
 ```
-agent-sync/
-├── cmd/agent-sync/main.go
+baton/
+├── cmd/baton/main.go
 ├── internal/
 │   ├── cli/            # cobra commands, thin: parse flags → engine calls
 │   ├── engine/         # orchestration: sync, handoff, skills ops
@@ -77,7 +77,7 @@ agent-sync/
 │   ├── handoff/        # extractor, budgeter, markdown renderer
 │   ├── mcptrans/       # canonical MCP model ⇄ per-agent config syntax
 │   ├── daemon/         # fsnotify, debounce, scheduler, lock detection
-│   └── config/         # tool config (~/.config/agent-sync/config.toml)
+│   └── config/         # tool config (~/.config/baton/config.toml)
 ├── testdata/fixtures/  # real (sanitized) session files per agent per version
 └── .goreleaser.yaml
 ```
@@ -168,8 +168,8 @@ Parallel lanes: **P2 ∥ P3** · **P5a ∥ P5b** · **P7 ∥ P8**.
 ### P0 — Scaffold & CI
 
 **Goal:** compilable skeleton every later phase builds on.
-**Deliverables:** Go module; cobra root + stub subcommands; `internal/config` (TOML at `~/.config/agent-sync/config.toml`, XDG-aware); structured logging (slog); GitHub Actions (build, test, lint, race); `.goreleaser.yaml` stub; `testdata/fixtures/` layout convention documented.
-**Acceptance:** `go build ./... && go test ./... && golangci-lint run` green in CI; `agent-sync --help` lists all planned commands as stubs.
+**Deliverables:** Go module; cobra root + stub subcommands; `internal/config` (TOML at `~/.config/baton/config.toml`, XDG-aware); structured logging (slog); GitHub Actions (build, test, lint, race); `.goreleaser.yaml` stub; `testdata/fixtures/` layout convention documented.
+**Acceptance:** `go build ./... && go test ./... && golangci-lint run` green in CI; `baton --help` lists all planned commands as stubs.
 **Subagent brief:** "Scaffold Go CLI project per IMPLEMENTATION_PLAN.md §1.2 + P0. No business logic."
 
 ### P1 — Canonical model, adapter interface, claude-code adapter
@@ -226,7 +226,7 @@ Parallel lanes: **P2 ∥ P3** · **P5a ∥ P5b** · **P7 ∥ P8**.
 ### P8 — Skills replication + MCP translation (parallel with P7)
 
 **Goal:** M3 config legs.
-**Deliverables:** skills replicator (per-agent dir trees §1.4, scrub pass applies, same-agent only per FR-12); `internal/mcptrans`: canonical `MCPServer` model, readers/writers for `.mcp.json`, opencode config, codex `config.toml`; secret-value stripping to placeholders + device-local never-synced secrets file (`~/.config/agent-sync/secrets.toml`, created 0600, path git-ignored by construction); `skills push/pull`, `mcp push/pull/emit --agent <a>` commands.
+**Deliverables:** skills replicator (per-agent dir trees §1.4, scrub pass applies, same-agent only per FR-12); `internal/mcptrans`: canonical `MCPServer` model, readers/writers for `.mcp.json`, opencode config, codex `config.toml`; secret-value stripping to placeholders + device-local never-synced secrets file (`~/.config/baton/secrets.toml`, created 0600, path git-ignored by construction); `skills push/pull`, `mcp push/pull/emit --agent <a>` commands.
 **Acceptance:** round-trip: canonical → each agent syntax → parse back → equal; secrets never appear in staged artifacts (test greps staged tree for seeded values); skill tree replication E2E across two temp HOMEs.
 **Subagent brief:** "Implement skills replication + mcptrans per P8. Secret-leak grep test is a hard gate."
 

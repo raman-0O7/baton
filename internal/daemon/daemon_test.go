@@ -11,8 +11,8 @@ import (
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/engine"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/engine"
 )
 
 // countCommits walks HEAD's history and counts commits whose message has
@@ -123,7 +123,7 @@ func TestIgnorable(t *testing.T) {
 		"/x/session.jsonl":                 false,
 		"/x/.hidden":                       true,
 		"/x/file.jsonl.bak-20260709":       true,
-		"/x/.agent-sync-tmp123":            true,
+		"/x/.baton-tmp123":                 true,
 		"/x/file.tmp":                      true,
 		"/x/editor-swap~":                  true,
 		"/x/rollout-2026-07-09-uuid.jsonl": false,

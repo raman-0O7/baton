@@ -15,7 +15,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 
-	"agent-sync/internal/registry"
+	"github.com/raman-0O7/baton/internal/registry"
 )
 
 // sessionGlob matches session artifacts (§1.4), which fork rather than
@@ -250,7 +250,7 @@ func (s *Store) mergeForkOnConflict(localC, remoteC *object.Commit) (PullReport,
 		}
 	}
 
-	msg := fmt.Sprintf("agent-sync: merge origin (fork-on-conflict) on %s [forks: %d, conflicts: %d]",
+	msg := fmt.Sprintf("baton: merge origin (fork-on-conflict) on %s [forks: %d, conflicts: %d]",
 		s.device, len(rep.Forks), len(rep.Conflicts))
 	_, err = wt.Commit(msg, &git.CommitOptions{
 		Author:            s.signature(),

@@ -8,8 +8,8 @@ import (
 
 	git "github.com/go-git/go-git/v5"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/crypt"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/crypt"
 )
 
 // TestEncryptedPushPull: with encryption on, session artifacts in the sync

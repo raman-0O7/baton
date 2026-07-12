@@ -12,7 +12,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/google/uuid"
 
-	"agent-sync/internal/scrub"
+	"github.com/raman-0O7/baton/internal/scrub"
 )
 
 // Backend is the persistence surface the registry needs from the sync

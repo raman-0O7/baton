@@ -1,9 +1,9 @@
 version: 2
-project_name: agent-sync
+project_name: baton
 
 builds:
-  - main: ./cmd/agent-sync
-    binary: agent-sync
+  - main: ./cmd/baton
+    binary: baton
     env: [CGO_ENABLED=0]
     goos: [darwin, linux, windows]
     goarch: [amd64, arm64]
@@ -28,10 +28,10 @@ changelog:
 # Homebrew tap (optional, later): create <owner>/homebrew-tap, set
 # HOMEBREW_TAP_GITHUB_TOKEN in repo secrets, then uncomment.
 # brews:
-#   - name: agent-sync
+#   - name: baton
 #     repository:
 #       owner: <github-owner>
 #       name: homebrew-tap
-#     homepage: https://github.com/<github-owner>/agent-sync
+#     homepage: https://github.com/<github-owner>/baton
 #     description: "Sync AI coding-agent sessions, skills, and MCP configs across devices and agents"
 #     license: MIT

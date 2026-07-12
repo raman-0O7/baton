@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"agent-sync/internal/scrub"
+	"github.com/raman-0O7/baton/internal/scrub"
 )
 
 // fakeBackend is an in-memory Backend for unit tests.

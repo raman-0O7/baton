@@ -13,19 +13,19 @@ import (
 	"runtime"
 	"strings"
 
-	"agent-sync/internal/config"
-	"agent-sync/internal/crypt"
-	"agent-sync/internal/gitstore"
-	"agent-sync/internal/registry"
+	"github.com/raman-0O7/baton/internal/config"
+	"github.com/raman-0O7/baton/internal/crypt"
+	"github.com/raman-0O7/baton/internal/gitstore"
+	"github.com/raman-0O7/baton/internal/registry"
 
 	// Adapters register themselves; the engine reaches them by name only.
-	_ "agent-sync/internal/adapters/claudecode"
-	_ "agent-sync/internal/adapters/codex"
-	_ "agent-sync/internal/adapters/opencode"
+	_ "github.com/raman-0O7/baton/internal/adapters/claudecode"
+	_ "github.com/raman-0O7/baton/internal/adapters/codex"
+	_ "github.com/raman-0O7/baton/internal/adapters/opencode"
 )
 
-// ErrNotInitialized is returned by Open before `agent-sync init` has run.
-var ErrNotInitialized = errors.New("agent-sync is not initialized on this device (run `agent-sync init`)")
+// ErrNotInitialized is returned by Open before `baton init` has run.
+var ErrNotInitialized = errors.New("baton is not initialized on this device (run `baton init`)")
 
 // Engine binds config, the sync repo store, and the registry.
 type Engine struct {

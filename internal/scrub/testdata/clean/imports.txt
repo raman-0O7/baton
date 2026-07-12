@@ -1,4 +1,4 @@
 import (
     "github.com/go-git/go-git/v5/plumbing/object"
-    "agent-sync/internal/adapters/claudecode"
+    "github.com/raman-0O7/baton/internal/adapters/claudecode"
 )

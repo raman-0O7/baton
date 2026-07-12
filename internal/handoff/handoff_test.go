@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"agent-sync/internal/model"
+	"github.com/raman-0O7/baton/internal/model"
 )
 
 func sampleSession() *model.Session {

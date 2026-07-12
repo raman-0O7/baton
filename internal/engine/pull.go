@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"agent-sync/internal/adapters"
-	"agent-sync/internal/crypt"
-	"agent-sync/internal/gitstore"
-	"agent-sync/internal/registry"
+	"github.com/raman-0O7/baton/internal/adapters"
+	"github.com/raman-0O7/baton/internal/crypt"
+	"github.com/raman-0O7/baton/internal/gitstore"
+	"github.com/raman-0O7/baton/internal/registry"
 )
 
 // activeWriteWindow: a local session file updated more recently than this
@@ -100,7 +100,7 @@ func (e *Engine) Pull() (PullReport, error) {
 		}
 		proj, mapped := byID[pid]
 		if !mapped {
-			rep.Skipped = append(rep.Skipped, artifact+" (project not mapped on this device — run `agent-sync enable` in its directory)")
+			rep.Skipped = append(rep.Skipped, artifact+" (project not mapped on this device — run `baton enable` in its directory)")
 			continue
 		}
 		adapter, err := adapters.Get(agentName)

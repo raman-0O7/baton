@@ -9,9 +9,9 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"agent-sync/internal/mcptrans"
-	"agent-sync/internal/model"
-	"agent-sync/internal/scrub"
+	"github.com/raman-0O7/baton/internal/mcptrans"
+	"github.com/raman-0O7/baton/internal/model"
+	"github.com/raman-0O7/baton/internal/scrub"
 )
 
 // mcpRepoPath is the canonical MCP server list in the sync repo.
@@ -28,7 +28,7 @@ func secretsPath() (string, error) {
 		}
 		base = filepath.Join(home, ".config")
 	}
-	return filepath.Join(base, "agent-sync", "secrets.toml"), nil
+	return filepath.Join(base, "baton", "secrets.toml"), nil
 }
 
 func loadSecrets() (map[string]string, error) {

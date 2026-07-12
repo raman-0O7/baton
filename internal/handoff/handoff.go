@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"agent-sync/internal/model"
+	"github.com/raman-0O7/baton/internal/model"
 )
 
 // Options tunes extraction. Zero values get defaults.

@@ -1,10 +1,34 @@
-# Finalized in P9. Stub keeps `goreleaser check` green.
 version: 2
 project_name: agent-sync
+
 builds:
   - main: ./cmd/agent-sync
+    binary: agent-sync
     env: [CGO_ENABLED=0]
     goos: [darwin, linux]
     goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
 archives:
   - formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude: ["^docs:", "^test:", "^ci:"]
+
+# Homebrew tap: create the <owner>/homebrew-tap repository and set
+# HOMEBREW_TAP_GITHUB_TOKEN in CI before the first tagged release.
+brews:
+  - name: agent-sync
+    repository:
+      owner: TODO-github-owner
+      name: homebrew-tap
+    homepage: https://github.com/TODO-github-owner/agent-sync
+    description: "Sync AI coding-agent sessions, skills, and MCP configs across devices and agents"
+    license: MIT

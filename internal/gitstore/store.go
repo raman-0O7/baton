@@ -27,6 +27,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 
+	"agent-sync/internal/crypt"
 	"agent-sync/internal/registry"
 	"agent-sync/internal/scrub"
 )
@@ -165,6 +166,13 @@ func (s *Store) Device() registry.DeviceID { return s.device }
 // write path into the sync repo: requiring scrub.Result makes committing
 // unscrubbed bytes a compile-time error.
 func (s *Store) StageArtifact(relPath string, r scrub.Result) error {
+	return s.stageBytes(relPath, r.Data())
+}
+
+// stageBytes is the shared write+add path under both staging entrypoints.
+// Deliberately unexported: external callers must come through a
+// scrub.Result-gated method.
+func (s *Store) stageBytes(relPath string, data []byte) error {
 	rel, full, err := s.paths(relPath)
 	if err != nil {
 		return err
@@ -172,7 +180,7 @@ func (s *Store) StageArtifact(relPath string, r scrub.Result) error {
 	if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
 		return fmt.Errorf("gitstore: create dirs for %s: %w", rel, err)
 	}
-	if err := os.WriteFile(full, r.Data(), 0o644); err != nil {
+	if err := os.WriteFile(full, data, 0o644); err != nil {
 		return fmt.Errorf("gitstore: write %s: %w", rel, err)
 	}
 	wt, err := s.repo.Worktree()
@@ -386,4 +394,16 @@ func (s *Store) Ahead() (n int, ok bool, err error) {
 		n++
 	}
 	return n, true, nil
+}
+
+// StageArtifactEncrypted is StageArtifact with age encryption applied to
+// the scrubbed bytes (SR-3). Encryption happens after scrubbing — the
+// scrub.Result requirement keeps the chokepoint — and never before, since
+// running the entropy scrubber over ciphertext would corrupt it.
+func (s *Store) StageArtifactEncrypted(relPath string, r scrub.Result, recipients []string) error {
+	sealed, err := crypt.Encrypt(r.Data(), recipients)
+	if err != nil {
+		return err
+	}
+	return s.stageBytes(relPath, sealed)
 }

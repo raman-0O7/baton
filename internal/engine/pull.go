@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"agent-sync/internal/adapters"
+	"agent-sync/internal/crypt"
 	"agent-sync/internal/gitstore"
 	"agent-sync/internal/registry"
 )
@@ -111,6 +112,18 @@ func (e *Engine) Pull() (PullReport, error) {
 		data, err := e.Store.ReadArtifact(artifact)
 		if err != nil {
 			return rep, err
+		}
+		if crypt.IsEncrypted(data) {
+			idPath, err := crypt.DefaultIdentityPath()
+			if err != nil {
+				return rep, err
+			}
+			plain, err := crypt.Decrypt(data, idPath)
+			if err != nil {
+				rep.Skipped = append(rep.Skipped, artifact+" (encrypted; decrypt failed: "+err.Error()+")")
+				continue
+			}
+			data = plain
 		}
 		s, err := unmarshalArtifact(data)
 		if err != nil {

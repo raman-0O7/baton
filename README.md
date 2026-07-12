@@ -1,0 +1,83 @@
+# agent-sync
+
+Sync AI coding-agent sessions, skills, and MCP server configs across
+devices — and hand off an in-progress session from one agent to another
+when a usage limit strikes.
+
+Supported agents: **Claude Code**, **opencode**, **Codex CLI**.
+Backend: **any git remote you own** (a private GitHub/Gitea repo). No
+accounts, no hosted service, fully offline-capable.
+
+## Why
+
+- **Rate-limit stranding.** Your Claude Code quota runs out mid-task; the
+  accumulated context is trapped. `agent-sync export --to opencode`
+  produces a mechanical handoff document (no LLM call — your quota is
+  exactly what just died) that the next agent ingests and continues from.
+- **Device stranding.** Sessions live on one machine. `agent-sync push`
+  on the desktop, `agent-sync pull` on the laptop, `claude --resume`
+  shows the same session at the laptop's own project path.
+
+## Quick start
+
+```console
+# one-time, per device
+agent-sync init --remote git@github.com:you/agent-sync-data.git
+
+# per project, per device
+cd ~/code/myproject
+agent-sync enable
+
+# work with your agent, then
+agent-sync push        # scrub → commit → push
+# on another device
+agent-sync pull        # place sessions into local agent storage
+claude --resume        # continue
+
+# limit hit? hand off to another agent
+agent-sync export --to opencode
+opencode run "$(cat handoff.md)"
+
+# zero-touch mode
+agent-sync daemon      # or: agent-sync daemon install-template
+```
+
+Skills and MCP configs:
+
+```console
+agent-sync skills push / pull          # replicate skill dirs per agent
+agent-sync mcp import --agent claudecode --path .mcp.json
+agent-sync mcp emit --agent codex      # translate to another agent's syntax
+```
+
+## Security model
+
+- **Mandatory scrub.** Every artifact passes a pattern + entropy secret
+  scanner before staging; the git layer's only write path requires a
+  scrub result by construction. Scrubbing is best-effort — use a private
+  remote, and encryption for sensitive work.
+- **MCP secrets never sync.** Credential values are externalized to a
+  device-local, 0600, never-synced `secrets.toml` and travel as
+  placeholders.
+- **Optional end-to-end encryption.** `agent-sync init --encrypt`
+  generates an age identity; artifacts are sealed after scrubbing, so the
+  git host sees opaque blobs. Trade-off: no remote-side diffs.
+- **Fork, never merge.** Divergent session timelines are both preserved
+  as sibling sessions; nothing is overwritten, nothing locks.
+
+## Documentation
+
+- `REQUIREMENTS.md` — locked product decisions
+- `IMPLEMENTATION_PLAN.md` — architecture and phase plan
+- `docs/formats/` — reverse-engineered per-agent storage formats
+
+## Status
+
+All M1–M3 milestone gates pass in CI (two-device sync E2E, handoff
+validation, daemon soak, encrypted round-trip). Codex adapter is built
+from public format documentation — not yet validated against a live
+install; see `docs/formats/codex.md`.
+
+## License
+
+MIT

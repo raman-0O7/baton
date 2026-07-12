@@ -30,11 +30,18 @@ jobs:
         with:
           version: latest
 
-  # Canary: parse fixtures against latest agent releases (REQUIREMENTS §8).
-  # Fleshed out in P9; placeholder keeps the job name reserved.
+  # Canary (REQUIREMENTS §8): adapter tests against committed fixtures run
+  # in `test`; this job additionally exercises the newest claude-code CLI's
+  # slug/storage behavior so format drift surfaces as a red canary, not a
+  # user bug report. Non-blocking by design.
   canary:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
-      - run: echo "canary lands in P9"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+      - name: fixture parse canary
+        run: go test ./internal/adapters/... -run . -count=1

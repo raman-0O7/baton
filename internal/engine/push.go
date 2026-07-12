@@ -118,7 +118,13 @@ func (e *Engine) push(pushNow bool) (PushReport, error) {
 				if err != nil {
 					return rep, err
 				}
-				if err := e.Store.StageArtifact(artifactPath(proj.ID, agentName, s.ID), res); err != nil {
+				ap := artifactPath(proj.ID, agentName, s.ID)
+				if e.Cfg.Encrypt {
+					err = e.Store.StageArtifactEncrypted(ap, res, e.Cfg.AgeRecipients)
+				} else {
+					err = e.Store.StageArtifact(ap, res)
+				}
+				if err != nil {
 					return rep, err
 				}
 				rep.Sessions++

@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"agent-sync/internal/config"
+	"agent-sync/internal/crypt"
 	"agent-sync/internal/gitstore"
 	"agent-sync/internal/registry"
 
@@ -201,4 +202,30 @@ func newDeviceID() string {
 	var b [3]byte
 	_, _ = rand.Read(b[:])
 	return strings.ToLower(host) + "-" + hex.EncodeToString(b[:])
+}
+
+// EnableEncryption generates (or reuses) this device's age identity, adds
+// its recipient to the config, and turns artifact encryption on (SR-3).
+func EnableEncryption() (recipient string, err error) {
+	cfg, err := config.Load()
+	if err != nil {
+		return "", err
+	}
+	idPath, err := crypt.DefaultIdentityPath()
+	if err != nil {
+		return "", err
+	}
+	if _, err := os.Stat(idPath); err == nil {
+		return "", fmt.Errorf("age identity already exists at %s; refusing to overwrite (delete it manually to rotate)", idPath)
+	}
+	recipient, err = crypt.GenerateIdentity(idPath)
+	if err != nil {
+		return "", err
+	}
+	cfg.Encrypt = true
+	cfg.AgeRecipients = append(cfg.AgeRecipients, recipient)
+	if err := config.Save(cfg); err != nil {
+		return "", err
+	}
+	return recipient, nil
 }

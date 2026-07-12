@@ -12,6 +12,7 @@ import (
 
 func init() {
 	var initRemote string
+	var initEncrypt bool
 	initCmd := &cobra.Command{
 		Use:   "init",
 		Short: "Create or clone the sync repo and register this device",
@@ -26,10 +27,20 @@ func init() {
 			} else {
 				fmt.Println("remote:", e.Cfg.Remote)
 			}
+			if initEncrypt {
+				recipient, err := engine.EnableEncryption()
+				if err != nil {
+					return err
+				}
+				fmt.Println("encryption enabled; age recipient:", recipient)
+				fmt.Println("BACK UP the identity file — without it synced data is unrecoverable.")
+				fmt.Println("Add this recipient to age_recipients in the config of every other device.")
+			}
 			return nil
 		},
 	}
 	initCmd.Flags().StringVar(&initRemote, "remote", "", "git remote URL for the sync repo")
+	initCmd.Flags().BoolVar(&initEncrypt, "encrypt", false, "generate an age identity and encrypt session artifacts (SR-3)")
 
 	var enableAgents []string
 	enableCmd := &cobra.Command{

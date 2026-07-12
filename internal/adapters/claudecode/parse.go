@@ -540,7 +540,9 @@ func miniDiff(path, oldStr, newStr string) string {
 	return sb.String()
 }
 
-// relPath makes path project-relative when it sits under cwd.
+// relPath makes path project-relative when it sits under cwd. Separators
+// match whatever OS recorded the transcript, not the OS running this code,
+// so both are tried.
 func relPath(cwd, path string) string {
 	if cwd == "" || path == "" {
 		return path
@@ -548,8 +550,10 @@ func relPath(cwd, path string) string {
 	if path == cwd {
 		return "."
 	}
-	if strings.HasPrefix(path, cwd+"/") {
-		return path[len(cwd)+1:]
+	for _, sep := range []string{"/", `\`} {
+		if strings.HasPrefix(path, cwd+sep) {
+			return path[len(cwd)+1:]
+		}
 	}
 	return path
 }

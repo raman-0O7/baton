@@ -6,6 +6,7 @@ package daemon
 import (
 	"context"
 	"log/slog"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -166,7 +167,7 @@ func addRoots(e *engine.Engine, watcher *fsnotify.Watcher, watched map[string]bo
 // ignorable filters our own write mechanics and editor noise out of the
 // event stream: backups, temp files, hidden files.
 func ignorable(path string) bool {
-	base := path[strings.LastIndexByte(path, '/')+1:]
+	base := filepath.Base(path)
 	return strings.HasPrefix(base, ".") ||
 		strings.Contains(base, ".bak-") ||
 		strings.HasSuffix(base, ".tmp") ||

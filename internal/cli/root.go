@@ -39,6 +39,11 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
+// SetVersion wires the goreleaser-stamped version into `--version`.
+func SetVersion(v string) {
+	rootCmd.Version = v
+}
+
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&flagVerbose, "verbose", "v", false, "enable debug logging")
 	rootCmd.PersistentFlags().StringVar(&flagConfig, "config", "", "path to config file (default: $XDG_CONFIG_HOME/agent-sync/config.toml)")

@@ -5,7 +5,7 @@ builds:
   - main: ./cmd/agent-sync
     binary: agent-sync
     env: [CGO_ENABLED=0]
-    goos: [darwin, linux]
+    goos: [darwin, linux, windows]
     goarch: [amd64, arm64]
     ldflags:
       - -s -w -X main.version={{.Version}}
@@ -13,6 +13,9 @@ builds:
 archives:
   - formats: [tar.gz]
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
 
 checksum:
   name_template: checksums.txt
@@ -22,13 +25,13 @@ changelog:
   filters:
     exclude: ["^docs:", "^test:", "^ci:"]
 
-# Homebrew tap: create the <owner>/homebrew-tap repository and set
-# HOMEBREW_TAP_GITHUB_TOKEN in CI before the first tagged release.
-brews:
-  - name: agent-sync
-    repository:
-      owner: TODO-github-owner
-      name: homebrew-tap
-    homepage: https://github.com/TODO-github-owner/agent-sync
-    description: "Sync AI coding-agent sessions, skills, and MCP configs across devices and agents"
-    license: MIT
+# Homebrew tap (optional, later): create <owner>/homebrew-tap, set
+# HOMEBREW_TAP_GITHUB_TOKEN in repo secrets, then uncomment.
+# brews:
+#   - name: agent-sync
+#     repository:
+#       owner: <github-owner>
+#       name: homebrew-tap
+#     homepage: https://github.com/<github-owner>/agent-sync
+#     description: "Sync AI coding-agent sessions, skills, and MCP configs across devices and agents"
+#     license: MIT

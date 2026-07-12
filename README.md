@@ -5,8 +5,15 @@ devices — and hand off an in-progress session from one agent to another
 when a usage limit strikes.
 
 Supported agents: **Claude Code**, **opencode**, **Codex CLI**.
-Backend: **any git remote you own** (a private GitHub/Gitea repo). No
-accounts, no hosted service, fully offline-capable.
+Platforms: **macOS, Linux, Windows** (amd64 + arm64) — one static binary,
+zero dependencies. Backend: **any git remote you own** (a private
+GitHub/Gitea repo). No accounts, no hosted service, fully offline-capable.
+
+## Install
+
+Grab the binary for your OS from
+[Releases](../../releases/latest) and put it on your PATH — that's the
+whole install. Or with Go: `go install <module>/cmd/agent-sync@latest`.
 
 ## Why
 

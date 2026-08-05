@@ -1768,6 +1768,269 @@
         }
       }
     },
+    "/v1/projects/{projectId}/reindex": {
+      "post": {
+        "operationId": "reindexProject",
+        "summary": "Materialize the retrieval chunk index for a project",
+        "security": [
+          {
+            "BatonOAuth": ["projects:write"]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The project retrieval index was refreshed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectReindexResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid bearer access token is required.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The access token is missing the projects:write scope.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The project was not found.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/retrieval/search": {
+      "get": {
+        "operationId": "searchRetrieval",
+        "summary": "Lexically search normalized chunks within a project",
+        "security": [
+          {
+            "BatonOAuth": ["work:read"]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "workThreadId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "default": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ranked retrieval chunks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetrievalResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The search query is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid bearer access token is required.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The access token is missing the work:read scope.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The project was not found.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/work-threads/{workThreadId}/context": {
+      "get": {
+        "operationId": "compileWorkThreadContext",
+        "summary": "Compile a budgeted, cited continuation context for a thread",
+        "security": [
+          {
+            "BatonOAuth": ["work:read"]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workThreadId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            }
+          },
+          {
+            "name": "tokenBudget",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 64,
+              "maximum": 8000,
+              "default": 2000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A compiled thread bootstrap and cited evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadContext"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The context query is invalid.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A valid bearer access token is required.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The access token is missing the work:read scope.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The work thread was not found.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/projects/{projectId}/thread-suggestions": {
       "get": {
         "operationId": "suggestProjectThreads",
@@ -4766,6 +5029,330 @@
           }
         },
         "required": ["sourceSessionId", "suggestions"],
+        "additionalProperties": false
+      },
+      "RetrievalResult": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "workThreadId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "chunks": {
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "chunkId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "workThreadId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "sourceSessionId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sourceAgent": {
+                  "type": "string",
+                  "enum": ["claudecode", "codex", "opencode"]
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "message",
+                    "tool_use",
+                    "file_change",
+                    "task",
+                    "decision",
+                    "error"
+                  ]
+                },
+                "text": {
+                  "type": "string"
+                },
+                "filePaths": {
+                  "maxItems": 50,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "occurredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                },
+                "tokenEstimate": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "sourceEventIds": {
+                  "maxItems": 50,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "score": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "chunkId",
+                "workThreadId",
+                "sourceSessionId",
+                "sourceAgent",
+                "kind",
+                "text",
+                "filePaths",
+                "occurredAt",
+                "tokenEstimate",
+                "sourceEventIds",
+                "score"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "lexicalFallback": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "query",
+          "projectId",
+          "workThreadId",
+          "chunks",
+          "lexicalFallback"
+        ],
+        "additionalProperties": false
+      },
+      "ThreadContext": {
+        "type": "object",
+        "properties": {
+          "workThreadId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bootstrap": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "tokenEstimate": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "citations": {
+                "maxItems": 200,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "marker": {
+                      "type": "string"
+                    },
+                    "chunkId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "message",
+                        "tool_use",
+                        "file_change",
+                        "task",
+                        "decision",
+                        "error"
+                      ]
+                    },
+                    "sourceEventIds": {
+                      "maxItems": 50,
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                    }
+                  },
+                  "required": [
+                    "marker",
+                    "chunkId",
+                    "kind",
+                    "sourceEventIds",
+                    "occurredAt"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "includedChunkIds": {
+                "maxItems": 200,
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "text",
+              "tokenEstimate",
+              "citations",
+              "includedChunkIds",
+              "truncated"
+            ],
+            "additionalProperties": false
+          },
+          "evidence": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "tokenEstimate": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "citations": {
+                "maxItems": 200,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "marker": {
+                      "type": "string"
+                    },
+                    "chunkId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "message",
+                        "tool_use",
+                        "file_change",
+                        "task",
+                        "decision",
+                        "error"
+                      ]
+                    },
+                    "sourceEventIds": {
+                      "maxItems": 50,
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "occurredAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                    }
+                  },
+                  "required": [
+                    "marker",
+                    "chunkId",
+                    "kind",
+                    "sourceEventIds",
+                    "occurredAt"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "includedChunkIds": {
+                "maxItems": 200,
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "text",
+              "tokenEstimate",
+              "citations",
+              "includedChunkIds",
+              "truncated"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": ["workThreadId", "query", "bootstrap", "evidence"],
+        "additionalProperties": false
+      },
+      "ProjectReindexResult": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "indexedChunks": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": ["projectId", "indexedChunks"],
         "additionalProperties": false
       },
       "EventReadback": {

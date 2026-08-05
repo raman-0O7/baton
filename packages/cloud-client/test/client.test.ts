@@ -261,6 +261,76 @@ describe('BatonCloudClient', () => {
     ]);
   });
 
+  it('drives retrieval reindex, search, and thread context', async () => {
+    const projectId = '55555555-5555-4555-8555-555555555555';
+    const workThreadId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const calls: Array<{ method: string; path: string }> = [];
+    const client = new BatonCloudClient({
+      baseUrl: 'https://api.example.com',
+      fetcher: async (input, init) => {
+        const url = new URL(String(input));
+        calls.push({
+          method: init?.method ?? 'GET',
+          path: url.pathname + url.search,
+        });
+        if (url.pathname.endsWith('/reindex')) {
+          return Response.json({ projectId, indexedChunks: 3 });
+        }
+        if (url.pathname === '/v1/retrieval/search') {
+          return Response.json({
+            query: url.searchParams.get('query'),
+            projectId,
+            workThreadId: url.searchParams.get('workThreadId'),
+            chunks: [],
+            lexicalFallback: true,
+          });
+        }
+        return Response.json({
+          workThreadId,
+          query: 'greet',
+          bootstrap: {
+            text: 'Work thread',
+            tokenEstimate: 3,
+            citations: [],
+            includedChunkIds: [],
+            truncated: false,
+          },
+          evidence: {
+            text: 'Relevant evidence:',
+            tokenEstimate: 4,
+            citations: [],
+            includedChunkIds: [],
+            truncated: false,
+          },
+        });
+      },
+    });
+
+    expect(
+      (await client.reindexProject(projectId, 'token')).indexedChunks,
+    ).toBe(3);
+    await client.searchRetrieval(
+      { projectId, workThreadId, query: 'greet rename', limit: 10 },
+      'token',
+    );
+    await client.workThreadContext(
+      workThreadId,
+      { query: 'greet', tokenBudget: 400 },
+      'token',
+    );
+    expect(calls).toEqual([
+      { method: 'POST', path: `/v1/projects/${projectId}/reindex` },
+      {
+        method: 'GET',
+        path: `/v1/retrieval/search?projectId=${projectId}&query=greet+rename&workThreadId=${workThreadId}&limit=10`,
+      },
+      {
+        method: 'GET',
+        path: `/v1/work-threads/${workThreadId}/context?query=greet&tokenBudget=400`,
+      },
+    ]);
+  });
+
   it('builds cursor, limit, and suggestion query parameters', async () => {
     const projectId = '55555555-5555-4555-8555-555555555555';
     const workThreadId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';

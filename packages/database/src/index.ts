@@ -8,3 +8,6 @@ export * from './schema.js';
 export * from './work-thread-store.js';
 export * from './memory-work-thread-store.js';
 export * from './postgres-work-thread-store.js';
+export * from './retrieval-store.js';
+export * from './memory-retrieval-store.js';
+export * from './postgres-retrieval-store.js';

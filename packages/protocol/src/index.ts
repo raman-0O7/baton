@@ -6,6 +6,7 @@ export * from './ingestion.js';
 export * from './openapi.js';
 export * from './project.js';
 export * from './readback.js';
+export * from './retrieval.js';
 export * from './thread-overview.js';
 export * from './thread-suggestion.js';
 export * from './work-thread.js';

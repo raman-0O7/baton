@@ -35,6 +35,9 @@ importers:
       '@baton/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@baton/context':
+        specifier: workspace:*
+        version: link:../../packages/context
       '@baton/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -136,14 +139,32 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
 
+  packages/context:
+    dependencies:
+      '@baton/indexing':
+        specifier: workspace:*
+        version: link:../indexing
+      '@baton/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      '@baton/retrieval':
+        specifier: workspace:*
+        version: link:../retrieval
+
   packages/database:
     dependencies:
       '@baton/auth':
         specifier: workspace:*
         version: link:../auth
+      '@baton/indexing':
+        specifier: workspace:*
+        version: link:../indexing
       '@baton/protocol':
         specifier: workspace:*
         version: link:../protocol
+      '@baton/retrieval':
+        specifier: workspace:*
+        version: link:../retrieval
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@opentelemetry/api@1.9.1)(postgres@3.4.9)
@@ -160,12 +181,27 @@ importers:
       '@baton/adapters':
         specifier: workspace:*
         version: link:../adapters
+      '@baton/context':
+        specifier: workspace:*
+        version: link:../context
+      '@baton/indexing':
+        specifier: workspace:*
+        version: link:../indexing
       '@baton/protocol':
         specifier: workspace:*
         version: link:../protocol
+      '@baton/retrieval':
+        specifier: workspace:*
+        version: link:../retrieval
       '@baton/scrubber':
         specifier: workspace:*
         version: link:../scrubber
+
+  packages/indexing:
+    dependencies:
+      '@baton/protocol':
+        specifier: workspace:*
+        version: link:../protocol
 
   packages/observability:
     dependencies:
@@ -178,6 +214,15 @@ importers:
       zod:
         specifier: 4.4.3
         version: 4.4.3
+
+  packages/retrieval:
+    dependencies:
+      '@baton/indexing':
+        specifier: workspace:*
+        version: link:../indexing
+      '@baton/protocol':
+        specifier: workspace:*
+        version: link:../protocol
 
   packages/scrubber:
     dependencies:

@@ -28,6 +28,11 @@ import {
   UpdateProjectRequestSchema,
 } from './project.js';
 import { EventReadbackSchema } from './readback.js';
+import {
+  ProjectReindexResultSchema,
+  RetrievalResultSchema,
+  ThreadContextSchema,
+} from './retrieval.js';
 import { WorkThreadOverviewSchema } from './thread-overview.js';
 import { ThreadSuggestionListSchema } from './thread-suggestion.js';
 import {
@@ -525,6 +530,72 @@ export function createOpenApiDocument() {
           },
         },
       },
+      '/v1/projects/{projectId}/reindex': {
+        post: {
+          operationId: 'reindexProject',
+          summary: 'Materialize the retrieval chunk index for a project',
+          security: [{ BatonOAuth: ['projects:write'] }],
+          parameters: [uuidPathParameter('projectId')],
+          responses: {
+            '200': jsonResponse(
+              'The project retrieval index was refreshed.',
+              'ProjectReindexResult',
+            ),
+            '401': problemResponse('A valid bearer access token is required.'),
+            '403': problemResponse(
+              'The access token is missing the projects:write scope.',
+            ),
+            '404': problemResponse('The project was not found.'),
+          },
+        },
+      },
+      '/v1/retrieval/search': {
+        get: {
+          operationId: 'searchRetrieval',
+          summary: 'Lexically search normalized chunks within a project',
+          security: [{ BatonOAuth: ['work:read'] }],
+          parameters: [
+            uuidQueryParameter('projectId', true),
+            uuidQueryParameter('workThreadId', false),
+            requiredStringQueryParameter('query', 1024),
+            limitQueryParameter(),
+          ],
+          responses: {
+            '200': jsonResponse('Ranked retrieval chunks.', 'RetrievalResult'),
+            '400': problemResponse('The search query is invalid.'),
+            '401': problemResponse('A valid bearer access token is required.'),
+            '403': problemResponse(
+              'The access token is missing the work:read scope.',
+            ),
+            '404': problemResponse('The project was not found.'),
+          },
+        },
+      },
+      '/v1/work-threads/{workThreadId}/context': {
+        get: {
+          operationId: 'compileWorkThreadContext',
+          summary:
+            'Compile a budgeted, cited continuation context for a thread',
+          security: [{ BatonOAuth: ['work:read'] }],
+          parameters: [
+            uuidPathParameter('workThreadId'),
+            optionalStringQueryParameter('query', 1024),
+            tokenBudgetQueryParameter(),
+          ],
+          responses: {
+            '200': jsonResponse(
+              'A compiled thread bootstrap and cited evidence.',
+              'ThreadContext',
+            ),
+            '400': problemResponse('The context query is invalid.'),
+            '401': problemResponse('A valid bearer access token is required.'),
+            '403': problemResponse(
+              'The access token is missing the work:read scope.',
+            ),
+            '404': problemResponse('The work thread was not found.'),
+          },
+        },
+      },
       '/v1/projects/{projectId}/thread-suggestions': {
         get: {
           operationId: 'suggestProjectThreads',
@@ -622,6 +693,9 @@ export function createOpenApiDocument() {
         ),
         WorkThreadOverview: componentSchema(WorkThreadOverviewSchema),
         ThreadSuggestionList: componentSchema(ThreadSuggestionListSchema),
+        RetrievalResult: componentSchema(RetrievalResultSchema),
+        ThreadContext: componentSchema(ThreadContextSchema),
+        ProjectReindexResult: componentSchema(ProjectReindexResultSchema),
         EventReadback: componentSchema(EventReadbackSchema),
         ApiProblem: componentSchema(ApiProblemSchema),
       },
@@ -702,6 +776,24 @@ function requiredStringQueryParameter(name: string, maxLength: number) {
     in: 'query',
     required: true,
     schema: { type: 'string', minLength: 1, maxLength },
+  } as const;
+}
+
+function optionalStringQueryParameter(name: string, maxLength: number) {
+  return {
+    name,
+    in: 'query',
+    required: false,
+    schema: { type: 'string', minLength: 1, maxLength },
+  } as const;
+}
+
+function tokenBudgetQueryParameter() {
+  return {
+    name: 'tokenBudget',
+    in: 'query',
+    required: false,
+    schema: { type: 'integer', minimum: 64, maximum: 8000, default: 2000 },
   } as const;
 }
 

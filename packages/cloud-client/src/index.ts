@@ -15,7 +15,10 @@ import {
   ProjectSchema,
   TokenResponseSchema,
   EventReadbackSchema,
+  ProjectReindexResultSchema,
+  RetrievalResultSchema,
   SourceSessionListSchema,
+  ThreadContextSchema,
   ThreadSuggestionListSchema,
   WorkThreadListSchema,
   WorkThreadOverviewSchema,
@@ -38,7 +41,10 @@ import {
   type IngestionCheckpoint,
   type OAuthScope,
   type Project,
+  type ProjectReindexResult,
+  type RetrievalResult,
   type SourceSession,
+  type ThreadContext,
   type ThreadSuggestionList,
   type TokenRequest,
   type TokenResponse,
@@ -376,6 +382,57 @@ export class BatonCloudClient {
     return this.request(
       `/v1/projects/${encodeURIComponent(projectId)}/thread-suggestions${suffix === '' ? '' : `?${suffix}`}`,
       ThreadSuggestionListSchema,
+      { accessToken },
+    );
+  }
+
+  reindexProject(
+    projectId: string,
+    accessToken: string,
+  ): Promise<ProjectReindexResult> {
+    return this.request(
+      `/v1/projects/${encodeURIComponent(projectId)}/reindex`,
+      ProjectReindexResultSchema,
+      { method: 'POST', accessToken },
+    );
+  }
+
+  searchRetrieval(
+    input: {
+      projectId: string;
+      workThreadId?: string;
+      query: string;
+      limit?: number;
+    },
+    accessToken: string,
+  ): Promise<RetrievalResult> {
+    const params = new URLSearchParams({
+      projectId: input.projectId,
+      query: input.query,
+    });
+    if (input.workThreadId !== undefined)
+      params.set('workThreadId', input.workThreadId);
+    if (input.limit !== undefined) params.set('limit', String(input.limit));
+    return this.request(
+      `/v1/retrieval/search?${params.toString()}`,
+      RetrievalResultSchema,
+      { accessToken },
+    );
+  }
+
+  workThreadContext(
+    workThreadId: string,
+    options: { query?: string; tokenBudget?: number },
+    accessToken: string,
+  ): Promise<ThreadContext> {
+    const params = new URLSearchParams();
+    if (options.query !== undefined) params.set('query', options.query);
+    if (options.tokenBudget !== undefined)
+      params.set('tokenBudget', String(options.tokenBudget));
+    const suffix = params.toString();
+    return this.request(
+      `/v1/work-threads/${encodeURIComponent(workThreadId)}/context${suffix === '' ? '' : `?${suffix}`}`,
+      ThreadContextSchema,
       { accessToken },
     );
   }

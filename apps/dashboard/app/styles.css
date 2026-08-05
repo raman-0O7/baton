@@ -791,3 +791,26 @@ h1 em {
     grid-template-columns: 1fr;
   }
 }
+
+/* Phase 4 — thread search */
+.thread-search {
+  margin: 1rem 0 2rem;
+}
+.search-form {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0.6rem 0 1rem;
+}
+.search-form input {
+  flex: 1;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--rule);
+  background: var(--paper-light);
+  color: var(--ink);
+}
+.search-results li {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--rule);
+}

@@ -8,10 +8,12 @@ import {
   type IdentityService,
   type WebIdentityProvider,
 } from '@baton/auth';
+import { compileBootstrap, compileRetrievedContext } from '@baton/context';
 import {
   IngestionStoreError,
   type IngestionRequestContext,
   type IngestionStore,
+  type RetrievalStore,
   type WorkThreadStore,
 } from '@baton/database';
 import {
@@ -45,7 +47,12 @@ import {
   AssignWorkThreadSessionRequestSchema,
   CreateWorkThreadRequestSchema,
   EventReadbackSchema,
+  ProjectReindexResultSchema,
+  RetrievalResultSchema,
+  RetrievalSearchQuerySchema,
   SourceSessionListSchema,
+  ThreadContextQuerySchema,
+  ThreadContextSchema,
   ThreadSuggestionListSchema,
   ThreadSuggestionQuerySchema,
   UpdateWorkThreadRequestSchema,
@@ -67,6 +74,7 @@ export interface ApiApplicationOptions {
   identityProvider: WebIdentityProvider | null;
   ingestionStore?: IngestionStore;
   workThreadStore?: WorkThreadStore;
+  retrievalStore?: RetrievalStore;
   publicApiUrl: string;
   dashboardUrl: string;
   cookieSecret: string;
@@ -666,6 +674,104 @@ export async function buildApi(
     },
   );
 
+  app.post<{ Params: { projectId: string } }>(
+    '/v1/projects/:projectId/reindex',
+    async (request, reply) => {
+      const principal = await authenticate(
+        request,
+        options.identity,
+        sessionCookie,
+        ['projects:write'],
+      );
+      requireUuid(request.params.projectId, 'project');
+      const indexedChunks = await requireRetrievalStore(options).reindexProject(
+        requestContext(principal, request.id),
+        request.params.projectId,
+      );
+      return reply.send(
+        ProjectReindexResultSchema.parse({
+          projectId: request.params.projectId,
+          indexedChunks,
+        }),
+      );
+    },
+  );
+
+  app.get('/v1/retrieval/search', async (request, reply) => {
+    const principal = await authenticate(
+      request,
+      options.identity,
+      sessionCookie,
+      ['work:read'],
+    );
+    const query = parseSchema(RetrievalSearchQuerySchema, request.query);
+    const context = requestContext(principal, request.id);
+    const retrieval = requireRetrievalStore(options);
+    // Refresh the derived chunk index so results reflect the latest events.
+    await retrieval.reindexProject(context, query.projectId);
+    const sourceSessionIds =
+      query.workThreadId === undefined
+        ? undefined
+        : (
+            await requireWorkThreadStore(options).listThreadSessions(
+              context,
+              query.workThreadId,
+            )
+          ).sessions.map((session) => session.sourceSession.sourceSessionId);
+    const result = await retrieval.search(context, {
+      projectId: query.projectId,
+      workThreadId: query.workThreadId ?? null,
+      ...(sourceSessionIds === undefined ? {} : { sourceSessionIds }),
+      query: query.query,
+      ...(query.limit === undefined ? {} : { limit: query.limit }),
+    });
+    return reply.send(RetrievalResultSchema.parse(result));
+  });
+
+  app.get<{ Params: { workThreadId: string } }>(
+    '/v1/work-threads/:workThreadId/context',
+    async (request, reply) => {
+      const principal = await authenticate(
+        request,
+        options.identity,
+        sessionCookie,
+        ['work:read'],
+      );
+      requireUuid(request.params.workThreadId, 'work thread');
+      const query = parseSchema(ThreadContextQuerySchema, request.query);
+      const context = requestContext(principal, request.id);
+      const overview = await requireWorkThreadStore(
+        options,
+      ).getWorkThreadOverview(context, request.params.workThreadId);
+      const retrieval = requireRetrievalStore(options);
+      await retrieval.reindexProject(context, overview.workThread.projectId);
+      const sourceSessionIds = overview.sessions.map(
+        (session) => session.sourceSession.sourceSessionId,
+      );
+      const searchText =
+        query.query ?? overview.workThread.goal ?? overview.workThread.title;
+      const result = await retrieval.search(context, {
+        projectId: overview.workThread.projectId,
+        workThreadId: request.params.workThreadId,
+        sourceSessionIds,
+        query: searchText,
+        limit: 50,
+      });
+      const bootstrap = compileBootstrap(overview, { tokenBudget: 1000 });
+      const evidence = compileRetrievedContext(result.chunks, {
+        tokenBudget: query.tokenBudget ?? 2000,
+      });
+      return reply.send(
+        ThreadContextSchema.parse({
+          workThreadId: request.params.workThreadId,
+          query: query.query ?? null,
+          bootstrap,
+          evidence,
+        }),
+      );
+    },
+  );
+
   app.setNotFoundHandler((request, reply) => {
     return reply
       .type('application/problem+json')
@@ -878,6 +984,17 @@ function requireWorkThreadStore(
     );
   }
   return options.workThreadStore;
+}
+
+function requireRetrievalStore(options: ApiApplicationOptions): RetrievalStore {
+  if (options.retrievalStore === undefined) {
+    throw new HttpError(
+      'internal_error',
+      503,
+      'Cloud retrieval storage is not configured.',
+    );
+  }
+  return options.retrievalStore;
 }
 
 function requestContext(

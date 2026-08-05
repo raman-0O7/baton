@@ -535,6 +535,38 @@ export const workThreadSessions = pgTable(
   ],
 );
 
+export const chunks = pgTable(
+  'chunks',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    chunkId: text('chunk_id').notNull(),
+    projectId: uuid('project_id').notNull(),
+    workThreadId: uuid('work_thread_id'),
+    sourceSessionId: uuid('source_session_id').notNull(),
+    sourceAgent: text('source_agent').$type<AgentName>().notNull(),
+    kind: text('kind').notNull(),
+    text: text('text').notNull(),
+    filePaths: jsonb('file_paths').$type<string[]>().notNull(),
+    sourceEventIds: jsonb('source_event_ids').$type<string[]>().notNull(),
+    occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
+    tokenEstimate: integer('token_estimate').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.tenantId, table.chunkId] }),
+    foreignKey({
+      columns: [table.tenantId, table.projectId],
+      foreignColumns: [projects.tenantId, projects.projectId],
+      name: 'chunks_project_fk',
+    }),
+    index('chunks_tenant_project_thread_idx').on(
+      table.tenantId,
+      table.projectId,
+      table.workThreadId,
+    ),
+  ],
+);
+
 export const identitySchema = {
   tenants,
   users,
@@ -556,4 +588,5 @@ export const identitySchema = {
   artifacts,
   workThreads,
   workThreadSessions,
+  chunks,
 };

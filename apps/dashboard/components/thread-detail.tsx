@@ -2,12 +2,13 @@
 
 import type {
   EventReadback,
+  RetrievedChunk,
   SourceEvent,
   WorkThreadOverview,
   WorkThreadSession,
 } from '@baton/protocol';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 
 import { cloudFetch, loginHref, relativeTime } from './cloud';
 import { Frame, LoadingLedger } from './frame';
@@ -21,6 +22,9 @@ type ViewState =
 export function ThreadDetail({ workThreadId }: { workThreadId: string }) {
   const [state, setState] = useState<ViewState>({ kind: 'loading' });
   const [removing, setRemoving] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [results, setResults] = useState<RetrievedChunk[] | null>(null);
+  const [searching, setSearching] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -70,6 +74,31 @@ export function ThreadDetail({ workThreadId }: { workThreadId: string }) {
         kind: 'error',
         message: 'That session could not be reassigned.',
       });
+  }
+
+  async function runSearch(
+    event: FormEvent<HTMLFormElement>,
+    projectId: string,
+  ) {
+    event.preventDefault();
+    const trimmed = searchQuery.trim();
+    if (trimmed.length === 0) return;
+    setSearching(true);
+    const params = new URLSearchParams({
+      projectId,
+      workThreadId,
+      query: trimmed,
+    });
+    const response = await cloudFetch(
+      `/v1/retrieval/search?${params.toString()}`,
+    ).catch(() => null);
+    setSearching(false);
+    if (response?.ok) {
+      const body = (await response.json()) as { chunks: RetrievedChunk[] };
+      setResults(body.chunks);
+    } else {
+      setResults([]);
+    }
   }
 
   if (state.kind === 'loading') {
@@ -226,6 +255,42 @@ export function ThreadDetail({ workThreadId }: { workThreadId: string }) {
             </ul>
           )}
         </article>
+      </section>
+
+      <section className="thread-search">
+        <h2 className="section-heading">Search this thread</h2>
+        <form
+          className="search-form"
+          onSubmit={(event) =>
+            void runSearch(event, overview.workThread.projectId)
+          }
+        >
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Ask about a decision, file, or error…"
+            aria-label="Search this work thread"
+          />
+          <button type="submit" className="ink-button" disabled={searching}>
+            {searching ? 'Searching…' : 'Search'}
+          </button>
+        </form>
+        {results !== null &&
+          (results.length === 0 ? (
+            <p className="empty-note">No matching evidence.</p>
+          ) : (
+            <ul className="fact-list search-results">
+              {results.map((chunk) => (
+                <li key={chunk.chunkId}>
+                  <span className={`agent-tag agent-${chunk.sourceAgent}`}>
+                    {chunk.kind}
+                  </span>{' '}
+                  {chunk.text}
+                </li>
+              ))}
+            </ul>
+          ))}
       </section>
 
       <section className="thread-timeline">

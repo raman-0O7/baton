@@ -1,5 +1,5 @@
 {
-  "name": "@baton/evaluation",
+  "name": "@baton/context",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,11 +18,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@baton/adapters": "workspace:*",
-    "@baton/context": "workspace:*",
     "@baton/indexing": "workspace:*",
     "@baton/protocol": "workspace:*",
-    "@baton/retrieval": "workspace:*",
-    "@baton/scrubber": "workspace:*"
+    "@baton/retrieval": "workspace:*"
   }
 }

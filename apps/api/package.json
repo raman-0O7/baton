@@ -16,6 +16,7 @@
   "dependencies": {
     "@baton/auth": "workspace:*",
     "@baton/config": "workspace:*",
+    "@baton/context": "workspace:*",
     "@baton/database": "workspace:*",
     "@baton/observability": "workspace:*",
     "@baton/protocol": "workspace:*",

@@ -4,6 +4,7 @@ import {
   createDatabaseClient,
   PostgresIdentityStore,
   PostgresIngestionStore,
+  PostgresRetrievalStore,
   PostgresWorkThreadStore,
 } from '@baton/database';
 
@@ -21,6 +22,7 @@ const app = await buildApi({
   identity,
   ingestionStore: new PostgresIngestionStore(database.db),
   workThreadStore: new PostgresWorkThreadStore(database.db),
+  retrievalStore: new PostgresRetrievalStore(database.db),
   identityProvider: provider,
   publicApiUrl: config.publicApiUrl,
   dashboardUrl: config.dashboardUrl,

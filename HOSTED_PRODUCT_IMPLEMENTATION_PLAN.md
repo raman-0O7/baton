@@ -1,6 +1,6 @@
 # Baton Hosted Product Implementation Plan
 
-**Status:** Phases 0–3 complete; Phase 4 (indexed retrieval) is next  
+**Status:** Phases 0–4 complete; Phase 5 (Baton MCP) is next  
 **Last updated:** 2026-08-05  
 **Supersedes for new development:** The product direction in `REQUIREMENTS.md`
 and `IMPLEMENTATION_PLAN.md`. Those documents remain the record of the completed
@@ -917,6 +917,27 @@ On the locked evaluation corpus:
 - the median continuation bootstrap plus first retrieval is at least 80% smaller
   than the complete transcript;
 - cross-project and cross-tenant retrieval tests return no unauthorized data.
+
+**Completion record (2026-08-05):** Phase 4 is complete along the deterministic
+lexical path. A pure semantic-boundary chunker (`packages/indexing`) cuts
+immutable events into source-linked retrieval units with a token estimate; a
+deterministic BM25 lexical ranker (`packages/retrieval`) scores and
+de-duplicates them with no LLM in the loop; and a budget-bounded compiler
+(`packages/context`) produces a compact continuation bootstrap and a fully cited
+evidence document, degrading deterministically when the budget is tight. A
+`chunks` table (migration `0003`, generated `tsvector` + GIN index, forced RLS)
+plus a `RetrievalStore` (Postgres full-text search and an in-memory lexical
+mirror) materialize and query chunks under strict tenant/project/source-session
+scoping. The hosted API adds project reindex, `/v1/retrieval/search`, and a
+`/v1/work-threads/{id}/context` endpoint that compiles bootstrap + cited
+evidence; the typed cloud client and dashboard thread search consume them. The
+locked retrieval corpus gate passes: expected evidence is recalled and cited,
+excluded cross-thread evidence stays out of scope, every included line carries a
+source citation, the budget is honoured, and the compiled context is ≥80%
+smaller than a padded transcript. Cross-tenant search is rejected in both the
+in-memory and live PostgreSQL suites. Managed-model summarization/reranking and
+semantic embeddings are intentionally deferred behind the deterministic baseline
+(Phase 4 optional work, gated on recorded lexical metrics).
 
 ### Phase 5 — Baton MCP and cross-agent continuation
 

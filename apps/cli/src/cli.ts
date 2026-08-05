@@ -24,6 +24,9 @@ import {
   type SourceChangeWatcher,
 } from '@baton/sync';
 
+import { createBatonMcpServer } from '@baton/mcp';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+
 import type { CredentialStore, StoredCredentials } from './credentials.js';
 import {
   createNativeSyncRuntime,
@@ -94,6 +97,13 @@ export async function runCli(
         return 0;
       case 'continue':
         await continueThread(dependencies, args);
+        return 0;
+      case 'mcp':
+        if (args[1] === 'install') {
+          mcpInstall(dependencies, args[2]);
+          return 0;
+        }
+        await mcpServe(dependencies);
         return 0;
       case 'help':
       case '--help':
@@ -550,7 +560,52 @@ async function printThreadBootstrap(
   }
   dependencies.io.out('');
   dependencies.io.out(
-    'Baton bootstrap ready. Cited MCP retrieval arrives in a later release; for now this summary is your handoff.',
+    `Baton bootstrap ready. For cited, on-demand context in a fresh agent, run \`baton mcp\` and call baton_get_thread_context with work thread ${thread.workThreadId}.`,
+  );
+}
+
+async function mcpServe(dependencies: CliDependencies): Promise<void> {
+  const credentials = await freshCredentials(
+    dependencies,
+    await requireCredentials(dependencies),
+  );
+  const client = createClient(dependencies, credentials.apiBaseUrl);
+  const server = createBatonMcpServer(client, credentials.accessToken);
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  // stdout is the MCP transport; status goes to stderr only.
+  dependencies.io.error(
+    'Baton MCP server ready on stdio (read-only tools). Press Ctrl-C to stop.',
+  );
+  await new Promise<void>((resolve) => {
+    transport.onclose = () => resolve();
+    const finish = () => resolve();
+    process.once('SIGINT', finish);
+    process.once('SIGTERM', finish);
+  });
+  await server.close();
+}
+
+function mcpInstall(dependencies: CliDependencies, agent?: string): void {
+  const config = {
+    mcpServers: {
+      baton: { command: 'baton', args: ['mcp'] },
+    },
+  };
+  dependencies.io.out(
+    'Baton runs as a read-only MCP server over stdio using your logged-in credentials.',
+  );
+  dependencies.io.out(
+    'It exposes cited work-thread context tools; it never writes or ingests.',
+  );
+  dependencies.io.out('');
+  dependencies.io.out(
+    `Add this to your ${agent ?? 'agent'} MCP configuration:`,
+  );
+  dependencies.io.out(JSON.stringify(config, null, 2));
+  dependencies.io.out('');
+  dependencies.io.out(
+    'Then ask the agent to call baton_get_thread_context to resume a work thread.',
   );
 }
 
@@ -821,6 +876,8 @@ function printHelp(io: CliIo): void {
   io.out('  baton disable [PATH]');
   io.out('  baton daemon');
   io.out('  baton continue [PATH] [--thread ID]');
+  io.out('  baton mcp                 (read-only MCP server over stdio)');
+  io.out('  baton mcp install [AGENT] (print MCP configuration)');
   io.out('  baton whoami');
   io.out('  baton logout');
   io.out('  baton doctor');

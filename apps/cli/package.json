@@ -17,7 +17,9 @@
     "@baton/capture": "workspace:*",
     "@baton/cloud-client": "workspace:*",
     "@baton/config": "workspace:*",
+    "@baton/mcp": "workspace:*",
     "@baton/protocol": "workspace:*",
-    "@baton/sync": "workspace:*"
+    "@baton/sync": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.30.0"
   }
 }

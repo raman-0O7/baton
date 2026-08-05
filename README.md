@@ -12,12 +12,13 @@ layered memory.
 The hosted product has completed its Phase 0 engineering foundation, Phase 1
 cloud identity/device-login foundation, Phase 2 incremental capture and cloud
 sync (live PostgreSQL gate included), Phase 3 cross-agent work threads with a
-first useful dashboard, and Phase 4 indexed retrieval with a token-budgeted,
-fully cited context compiler. A work thread can begin in Claude on one device
-and continue in Codex on another as a single, user-confirmed thread, and a fresh
-agent can retrieve a compact, cited continuation context instead of the whole
-transcript. Phase 5 (the Baton MCP surface) is next. It is not yet available as
-a production service.
+first useful dashboard, Phase 4 indexed retrieval with a token-budgeted, fully
+cited context compiler, and Phase 5 a read-only Baton MCP surface. A work thread
+can begin in Claude on one device and continue in Codex on another as a single,
+user-confirmed thread, and a fresh agent — through the Baton MCP server —
+resumes it with a compact, cited context instead of the whole transcript. Phase
+6 (SOUL memory and personalization) is next. It is not yet available as a
+production service.
 
 ## Product direction
 
@@ -74,7 +75,10 @@ state, a dashboard work view and thread timeline, and the `baton continue`
 command. Phase 4 adds indexed retrieval: a semantic-boundary chunker,
 deterministic lexical search (PostgreSQL full-text search with an in-memory
 mirror), and a token-budgeted, fully cited context compiler exposed as retrieval
-search and thread-context APIs plus dashboard search.
+search and thread-context APIs plus dashboard search. Phase 5 adds the read-only
+Baton MCP surface: five cited-context tools, a stdio MCP server, and the
+`baton mcp` command so a fresh agent can resume a work thread without the full
+transcript.
 
 For local hosted setup, see
 [`docs/development/hosted-local.md`](docs/development/hosted-local.md). The

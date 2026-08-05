@@ -1,6 +1,6 @@
 # Baton Hosted Product Implementation Plan
 
-**Status:** Phases 0–4 complete; Phase 5 (Baton MCP) is next  
+**Status:** Phases 0–5 complete; Phase 6 (SOUL memory) is next  
 **Last updated:** 2026-08-05  
 **Supersedes for new development:** The product direction in `REQUIREMENTS.md`
 and `IMPLEMENTATION_PLAN.md`. Those documents remain the record of the completed
@@ -969,6 +969,28 @@ needed Baton context.
 A developer stops work in one agent/device and completes the task in a different
 agent/device. The target receives no full transcript, uses cited Baton
 retrieval, and does not access unrelated project history.
+
+**Completion record (2026-08-05):** Phase 5 is gate-complete. A new
+`packages/mcp` provides the read-only Baton MCP surface: five tools
+(`baton_list_threads`, `baton_suggest_threads`, `baton_get_thread_overview`,
+`baton_search_context`, `baton_get_thread_context`) with Zod-validated input,
+token-budget clamps, structured cited output, and safe error handling; a server
+factory (official MCP TypeScript SDK) registers them and exposes no write tools.
+The CLI adds `baton mcp` (an stdio MCP server bound to the logged-in read
+credentials) and `baton mcp install`, and `baton continue` now points at
+`baton_get_thread_context`. The end-to-end gate runs a real MCP client through
+the server, the typed cloud client, and the live in-memory API: a fresh agent
+resumes a thread with a compact, cited context — bootstrap plus budgeted
+evidence, never a full transcript — while a second tenant's agent is denied the
+project. Adversarial tests cover stored prompt injection (transcript content is
+returned as cited data, never executed), confused-deputy access (an unowned
+project surfaces the API's `not_found` with no leak), token exfiltration (the
+access token never appears in any tool output), and tool authorization (only
+read tools are advertised; unknown tools and malformed input become structured
+errors). Because the tool set has no write tools, MCP credentials can never
+ingest or mutate. Deferred to Phase 7 (which owns the audit/privacy dashboard):
+a server-side MCP-access audit trail and a dashboard MCP-activity view, and a
+distinct read-only OAuth grant separate from the CLI ingestion credential.
 
 ### Phase 6 — SOUL memory and personalization
 

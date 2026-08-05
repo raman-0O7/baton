@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "datasetKind": "thread_suggestion",
+  "origin": "synthetic_scenario",
+  "nowIso": "2026-07-01T11:00:00.000Z",
+  "cases": [
+    {
+      "id": "cross-agent-continuation",
+      "description": "A Codex session on a second device shares files and branch with a Claude thread and should be suggested for it.",
+      "activeThreadCount": 1,
+      "candidate": {
+        "sourceSessionId": "018f0f90-2000-7000-8000-0000000000b2",
+        "sourceAgent": "codex",
+        "sourceDeviceId": "018f0f90-1000-7000-8000-0000000000d2",
+        "events": [
+          {
+            "occurredAt": "2026-07-01T10:40:00.000Z",
+            "payload": { "kind": "session_metadata", "gitBranch": "feat/auth" }
+          },
+          {
+            "occurredAt": "2026-07-01T10:41:00.000Z",
+            "payload": {
+              "kind": "file_change",
+              "path": "src/auth.ts",
+              "operation": "edit"
+            }
+          }
+        ]
+      },
+      "threads": [
+        {
+          "workThreadId": "018f0f90-3000-7000-8000-000000000001",
+          "title": "Implement hosted authentication",
+          "state": "active",
+          "updatedAt": "2026-07-01T10:30:00.000Z",
+          "assignedSourceSessionIds": ["018f0f90-2000-7000-8000-0000000000a1"],
+          "events": [
+            {
+              "sourceSessionId": "018f0f90-2000-7000-8000-0000000000a1",
+              "sourceAgent": "claudecode",
+              "sourceDeviceId": "018f0f90-1000-7000-8000-0000000000d1",
+              "occurredAt": "2026-07-01T10:00:00.000Z",
+              "payload": {
+                "kind": "session_metadata",
+                "gitBranch": "feat/auth"
+              }
+            },
+            {
+              "sourceSessionId": "018f0f90-2000-7000-8000-0000000000a1",
+              "sourceAgent": "claudecode",
+              "sourceDeviceId": "018f0f90-1000-7000-8000-0000000000d1",
+              "occurredAt": "2026-07-01T10:05:00.000Z",
+              "payload": {
+                "kind": "file_change",
+                "path": "src/auth.ts",
+                "operation": "create"
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "topWorkThreadId": "018f0f90-3000-7000-8000-000000000001",
+        "reasons": ["shared_files", "same_branch"],
+        "minScore": 0.4
+      }
+    },
+    {
+      "id": "shared-source-session-is-certain",
+      "description": "A session already assigned to a thread is a certain continuation of it.",
+      "activeThreadCount": 2,
+      "candidate": {
+        "sourceSessionId": "018f0f90-2000-7000-8000-0000000000b2",
+        "sourceAgent": "codex",
+        "sourceDeviceId": "018f0f90-1000-7000-8000-0000000000d2",
+        "events": [
+          {
+            "occurredAt": "2026-07-01T10:40:00.000Z",
+            "payload": { "kind": "message", "role": "user", "text": "continue" }
+          }
+        ]
+      },
+      "threads": [
+        {
+          "workThreadId": "018f0f90-3000-7000-8000-000000000001",
+          "title": "Implement hosted authentication",
+          "state": "active",
+          "updatedAt": "2026-07-01T10:30:00.000Z",
+          "assignedSourceSessionIds": ["018f0f90-2000-7000-8000-0000000000b2"],
+          "events": [
+            {
+              "sourceSessionId": "018f0f90-2000-7000-8000-0000000000b2",
+              "sourceAgent": "codex",
+              "sourceDeviceId": "018f0f90-1000-7000-8000-0000000000d2",
+              "occurredAt": "2026-07-01T10:40:00.000Z",
+              "payload": {
+                "kind": "message",
+                "role": "user",
+                "text": "continue"
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "topWorkThreadId": "018f0f90-3000-7000-8000-000000000001",
+        "reasons": ["shared_source_session"],
+        "minScore": 1
+      }
+    },
+    {
+      "id": "no-shared-evidence-is-not-suggested",
+      "description": "A session that touches different files on a different branch with no recent thread activity yields no suggestion.",
+      "activeThreadCount": 2,
+      "candidate": {
+        "sourceSessionId": "018f0f90-2000-7000-8000-0000000000b2",
+        "sourceAgent": "codex",
+        "sourceDeviceId": "018f0f90-1000-7000-8000-0000000000d2",
+        "events": [
+          {
+            "occurredAt": "2026-07-01T10:40:00.000Z",
+            "payload": {
+              "kind": "session_metadata",
+              "gitBranch": "feat/billing"
+            }
+          },
+          {
+            "occurredAt": "2026-07-01T10:41:00.000Z",
+            "payload": {
+              "kind": "file_change",
+              "path": "src/billing.ts",
+              "operation": "edit"
+            }
+          }
+        ]
+      },
+      "threads": [
+        {
+          "workThreadId": "018f0f90-3000-7000-8000-000000000001",
+          "title": "Old authentication work",
+          "state": "active",
+          "updatedAt": "2026-01-01T10:30:00.000Z",
+          "assignedSourceSessionIds": ["018f0f90-2000-7000-8000-0000000000a1"],
+          "events": [
+            {
+              "sourceSessionId": "018f0f90-2000-7000-8000-0000000000a1",
+              "sourceAgent": "claudecode",
+              "sourceDeviceId": "018f0f90-1000-7000-8000-0000000000d1",
+              "occurredAt": "2026-01-01T10:00:00.000Z",
+              "payload": {
+                "kind": "session_metadata",
+                "gitBranch": "feat/auth"
+              }
+            },
+            {
+              "sourceSessionId": "018f0f90-2000-7000-8000-0000000000a1",
+              "sourceAgent": "claudecode",
+              "sourceDeviceId": "018f0f90-1000-7000-8000-0000000000d1",
+              "occurredAt": "2026-01-01T10:05:00.000Z",
+              "payload": {
+                "kind": "file_change",
+                "path": "src/auth.ts",
+                "operation": "create"
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "topWorkThreadId": null,
+        "reasons": [],
+        "minScore": 0
+      }
+    },
+    {
+      "id": "sole-active-thread-without-candidate",
+      "description": "With no candidate session and a single dormant active thread, that thread is a gentle continuation suggestion.",
+      "activeThreadCount": 1,
+      "candidate": null,
+      "threads": [
+        {
+          "workThreadId": "018f0f90-3000-7000-8000-000000000001",
+          "title": "Implement hosted authentication",
+          "state": "active",
+          "updatedAt": "2026-06-01T10:30:00.000Z",
+          "assignedSourceSessionIds": ["018f0f90-2000-7000-8000-0000000000a1"],
+          "events": [
+            {
+              "sourceSessionId": "018f0f90-2000-7000-8000-0000000000a1",
+              "sourceAgent": "claudecode",
+              "sourceDeviceId": "018f0f90-1000-7000-8000-0000000000d1",
+              "occurredAt": "2026-06-01T10:00:00.000Z",
+              "payload": {
+                "kind": "message",
+                "role": "user",
+                "text": "start auth"
+              }
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "topWorkThreadId": "018f0f90-3000-7000-8000-000000000001",
+        "reasons": ["sole_active_thread"],
+        "minScore": 0.1
+      }
+    }
+  ]
+}

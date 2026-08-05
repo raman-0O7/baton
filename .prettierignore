@@ -1,0 +1,17 @@
+.git
+.github
+.pnpm-store
+.turbo
+node_modules
+dist
+coverage
+**/next-env.d.ts
+.goreleaser.yaml
+cmd
+docs/formats
+internal
+IMPLEMENTATION_PLAN.md
+REQUIREMENTS.md
+go.sum
+pnpm-lock.yaml
+testdata/fixtures

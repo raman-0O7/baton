@@ -1,0 +1,25 @@
+{
+  "name": "@baton/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./dist/app.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "dev": "node --enable-source-maps --watch dist/main.js",
+    "start": "node --enable-source-maps dist/main.js"
+  },
+  "dependencies": {
+    "@baton/auth": "workspace:*",
+    "@baton/config": "workspace:*",
+    "@baton/database": "workspace:*",
+    "@baton/observability": "workspace:*",
+    "@baton/protocol": "workspace:*",
+    "@fastify/cookie": "11.1.2",
+    "fastify": "5.11.0"
+  }
+}

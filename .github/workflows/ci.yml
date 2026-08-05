@@ -5,6 +5,39 @@ on:
   pull_request:
 
 jobs:
+  typescript:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: baton
+          POSTGRES_USER: baton
+          POSTGRES_PASSWORD: baton
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U baton -d baton"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://baton:baton@localhost:5432/baton
+      TEST_DATABASE_URL: postgres://baton:baton@localhost:5432/baton
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @baton/database build && pnpm db:migrate
+      - run: pnpm check
+
   test:
     runs-on: ${{ matrix.os }}
     strategy:

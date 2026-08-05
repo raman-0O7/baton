@@ -1,0 +1,511 @@
+{
+  "schemaVersion": 1,
+  "datasetKind": "adapter_expected_events",
+  "identityFields": {
+    "status": "intentionally_omitted",
+    "fields": [
+      "eventId",
+      "idempotencyKey",
+      "sourceSessionId",
+      "sourceDeviceId",
+      "parentEventId",
+      "contentHash",
+      "cursor"
+    ],
+    "reason": "The legacy snapshots establish canonical semantics, but not the streaming adapter identity algorithm. Inventing these values would make the corpus appear more authoritative than its evidence."
+  },
+  "cases": [
+    {
+      "id": "claudecode-basic",
+      "agent": "claudecode",
+      "origin": "derived_from_sanitized_fixture",
+      "sourceFixture": "testdata/fixtures/claudecode/2026-07/session-basic.jsonl",
+      "sourceGolden": "testdata/fixtures/claudecode/2026-07/expected-session-basic.json",
+      "events": [
+        {
+          "key": "turn:0",
+          "occurredAt": "2026-07-09T10:00:01Z",
+          "sourcePointer": "/turns/0",
+          "nativeLocator": {
+            "line": 5,
+            "nativeId": "11111111-aaaa-4bbb-8ccc-000000000001"
+          },
+          "payload": {
+            "kind": "message",
+            "role": "user",
+            "text": "How do I list files in a directory in Go?"
+          }
+        },
+        {
+          "key": "turn:1",
+          "occurredAt": "2026-07-09T10:00:06Z",
+          "sourcePointer": "/turns/1",
+          "nativeLocator": {
+            "line": 7,
+            "nativeId": "33333333-aaaa-4bbb-8ccc-000000000003"
+          },
+          "payload": {
+            "kind": "message",
+            "role": "assistant",
+            "text": "Use os.ReadDir:\n\n```go\nentries, err := os.ReadDir(\".\")\n```\n\nIt returns entries sorted by filename."
+          }
+        },
+        {
+          "key": "turn:2",
+          "occurredAt": "2026-07-09T10:00:30Z",
+          "sourcePointer": "/turns/2",
+          "nativeLocator": {
+            "line": 8,
+            "nativeId": "44444444-aaaa-4bbb-8ccc-000000000004"
+          },
+          "payload": { "kind": "message", "role": "user", "text": "Thanks!" }
+        },
+        {
+          "key": "turn:3",
+          "occurredAt": "2026-07-09T10:00:33Z",
+          "sourcePointer": "/turns/3",
+          "nativeLocator": {
+            "line": 9,
+            "nativeId": "55555555-aaaa-4bbb-8ccc-000000000005"
+          },
+          "payload": {
+            "kind": "message",
+            "role": "assistant",
+            "text": "You're welcome."
+          }
+        }
+      ]
+    },
+    {
+      "id": "claudecode-tools",
+      "agent": "claudecode",
+      "origin": "derived_from_sanitized_fixture",
+      "sourceFixture": "testdata/fixtures/claudecode/2026-07/session-tools.jsonl",
+      "sourceGolden": "testdata/fixtures/claudecode/2026-07/expected-session-tools.json",
+      "events": [
+        {
+          "key": "turn:0",
+          "occurredAt": "2026-07-09T11:00:00Z",
+          "sourcePointer": "/turns/0",
+          "nativeLocator": {
+            "line": 2,
+            "nativeId": "aaaa1111-0000-4000-8000-000000000001"
+          },
+          "payload": {
+            "kind": "message",
+            "role": "user",
+            "text": "Create a greet.go with a Greet function, then rename the function to Hello."
+          }
+        },
+        {
+          "key": "turn:1",
+          "occurredAt": "2026-07-09T11:00:02Z",
+          "sourcePointer": "/turns/1",
+          "nativeLocator": {
+            "line": 3,
+            "nativeId": "aaaa1111-0000-4000-8000-000000000002"
+          },
+          "payload": {
+            "kind": "message",
+            "role": "assistant",
+            "text": "Creating greet.go now."
+          }
+        },
+        {
+          "key": "turn:4",
+          "occurredAt": "2026-07-09T11:00:15Z",
+          "sourcePointer": "/turns/4",
+          "nativeLocator": {
+            "line": 10,
+            "nativeId": "aaaa1111-0000-4000-8000-000000000009"
+          },
+          "payload": {
+            "kind": "message",
+            "role": "assistant",
+            "text": "Done: greet.go created and the function renamed to Hello. Unit tests remain as a follow-up."
+          }
+        },
+        {
+          "key": "tool_call:0",
+          "occurredAt": "2026-07-09T11:00:03Z",
+          "sourcePointer": "/tool_calls/0",
+          "nativeLocator": {
+            "line": 4,
+            "nativeId": "toolu_01WriteAAAAAAAAAAAAAAAA"
+          },
+          "payload": {
+            "kind": "tool_call",
+            "toolCallId": "toolu_01WriteAAAAAAAAAAAAAAAA",
+            "name": "Write",
+            "inputSummary": "/home/user/project/greet.go"
+          }
+        },
+        {
+          "key": "tool_result:0",
+          "occurredAt": "2026-07-09T11:00:03Z",
+          "sourcePointer": "/tool_calls/0",
+          "nativeLocator": {
+            "line": 5,
+            "nativeId": "toolu_01WriteAAAAAAAAAAAAAAAA"
+          },
+          "payload": {
+            "kind": "tool_result",
+            "toolCallId": "toolu_01WriteAAAAAAAAAAAAAAAA",
+            "outputSummary": "File created successfully at: /home/user/project/greet.go",
+            "isError": false
+          }
+        },
+        {
+          "key": "tool_call:1",
+          "occurredAt": "2026-07-09T11:00:08Z",
+          "sourcePointer": "/tool_calls/1",
+          "nativeLocator": {
+            "line": 6,
+            "nativeId": "toolu_01EditAAAAAAAAAAAAAAAAA"
+          },
+          "payload": {
+            "kind": "tool_call",
+            "toolCallId": "toolu_01EditAAAAAAAAAAAAAAAAA",
+            "name": "Edit",
+            "inputSummary": "/home/user/project/greet.go"
+          }
+        },
+        {
+          "key": "tool_result:1",
+          "occurredAt": "2026-07-09T11:00:08Z",
+          "sourcePointer": "/tool_calls/1",
+          "nativeLocator": {
+            "line": 7,
+            "nativeId": "toolu_01EditAAAAAAAAAAAAAAAAA"
+          },
+          "payload": {
+            "kind": "tool_result",
+            "toolCallId": "toolu_01EditAAAAAAAAAAAAAAAAA",
+            "outputSummary": "The file /home/user/project/greet.go has been updated successfully.",
+            "isError": false
+          }
+        },
+        {
+          "key": "tool_call:2",
+          "occurredAt": "2026-07-09T11:00:12Z",
+          "sourcePointer": "/tool_calls/2",
+          "nativeLocator": {
+            "line": 8,
+            "nativeId": "toolu_01TodoAAAAAAAAAAAAAAAAA"
+          },
+          "payload": {
+            "kind": "tool_call",
+            "toolCallId": "toolu_01TodoAAAAAAAAAAAAAAAAA",
+            "name": "TodoWrite",
+            "inputSummary": "{\"todos\":[{\"content\":\"Create greet.go\",\"status\":\"completed\",\"activeForm\":\"Creating greet.go\"},{\"content\":\"Add unit tests\",\"status\":\"pending\",\"activeForm\":\"Adding unit tests\"}]}"
+          }
+        },
+        {
+          "key": "tool_result:2",
+          "occurredAt": "2026-07-09T11:00:12Z",
+          "sourcePointer": "/tool_calls/2",
+          "nativeLocator": {
+            "line": 9,
+            "nativeId": "toolu_01TodoAAAAAAAAAAAAAAAAA"
+          },
+          "payload": {
+            "kind": "tool_result",
+            "toolCallId": "toolu_01TodoAAAAAAAAAAAAAAAAA",
+            "outputSummary": "Todos have been modified successfully.",
+            "isError": false
+          }
+        },
+        {
+          "key": "file_op:0",
+          "occurredAt": "2026-07-09T11:00:03Z",
+          "sourcePointer": "/file_ops/0",
+          "nativeLocator": {
+            "line": 5,
+            "nativeId": "toolu_01WriteAAAAAAAAAAAAAAAA"
+          },
+          "payload": {
+            "kind": "file_change",
+            "path": "greet.go",
+            "operation": "create",
+            "summary": "wrote 74 bytes"
+          }
+        },
+        {
+          "key": "file_op:1",
+          "occurredAt": "2026-07-09T11:00:08Z",
+          "sourcePointer": "/file_ops/1",
+          "nativeLocator": {
+            "line": 7,
+            "nativeId": "toolu_01EditAAAAAAAAAAAAAAAAA"
+          },
+          "payload": {
+            "kind": "file_change",
+            "path": "greet.go",
+            "operation": "edit",
+            "diff": "--- a/greet.go\n+++ b/greet.go\n-func Greet(name string) string {\n+func Hello(name string) string {\n",
+            "summary": "replaced 32 bytes with 32 bytes"
+          }
+        },
+        {
+          "key": "todo:0",
+          "occurredAt": "2026-07-09T11:00:12Z",
+          "sourcePointer": "/todos/0",
+          "nativeLocator": {
+            "line": 8,
+            "nativeId": "toolu_01TodoAAAAAAAAAAAAAAAAA"
+          },
+          "payload": {
+            "kind": "task",
+            "text": "Create greet.go",
+            "status": "completed"
+          }
+        },
+        {
+          "key": "todo:1",
+          "occurredAt": "2026-07-09T11:00:12Z",
+          "sourcePointer": "/todos/1",
+          "nativeLocator": {
+            "line": 8,
+            "nativeId": "toolu_01TodoAAAAAAAAAAAAAAAAA"
+          },
+          "payload": {
+            "kind": "task",
+            "text": "Add unit tests",
+            "status": "pending"
+          }
+        }
+      ]
+    },
+    {
+      "id": "codex-basic",
+      "agent": "codex",
+      "origin": "derived_from_sanitized_fixture",
+      "sourceFixture": "testdata/fixtures/codex/2026-07-rollout/rollout-2026-07-09T10-00-00-aaaa1111-bbbb-4ccc-8ddd-eeee00000001.jsonl",
+      "sourceGolden": "testdata/fixtures/codex/2026-07-rollout/expected-session-basic.json",
+      "events": [
+        {
+          "key": "turn:0",
+          "occurredAt": "2026-07-09T10:00:03Z",
+          "sourcePointer": "/turns/0",
+          "nativeLocator": { "line": 4 },
+          "payload": {
+            "kind": "message",
+            "role": "user",
+            "text": "How do I list files in a directory in Go?"
+          }
+        },
+        {
+          "key": "turn:1",
+          "occurredAt": "2026-07-09T10:00:08Z",
+          "sourcePointer": "/turns/1",
+          "nativeLocator": { "line": 5 },
+          "payload": {
+            "kind": "message",
+            "role": "assistant",
+            "text": "Use os.ReadDir — it returns entries sorted by filename."
+          }
+        }
+      ]
+    },
+    {
+      "id": "codex-tools",
+      "agent": "codex",
+      "origin": "derived_from_sanitized_fixture",
+      "sourceFixture": "testdata/fixtures/codex/2026-07-rollout/rollout-2026-07-09T11-00-00-bbbb2222-cccc-4ddd-8eee-ffff00000002.jsonl",
+      "sourceGolden": "testdata/fixtures/codex/2026-07-rollout/expected-session-tools.json",
+      "events": [
+        {
+          "key": "turn:0",
+          "occurredAt": "2026-07-09T11:00:02Z",
+          "sourcePointer": "/turns/0",
+          "nativeLocator": { "line": 2 },
+          "payload": {
+            "kind": "message",
+            "role": "user",
+            "text": "Create a greet.go with a Greet function."
+          }
+        },
+        {
+          "key": "turn:1",
+          "occurredAt": "2026-07-09T11:00:05Z",
+          "sourcePointer": "/turns/1",
+          "nativeLocator": { "line": 3 },
+          "payload": {
+            "kind": "message",
+            "role": "assistant",
+            "text": "Creating greet.go now."
+          }
+        },
+        {
+          "key": "turn:2",
+          "occurredAt": "2026-07-09T11:00:12Z",
+          "sourcePointer": "/turns/2",
+          "nativeLocator": { "line": 6 },
+          "payload": {
+            "kind": "message",
+            "role": "assistant",
+            "text": "Done — greet.go created."
+          }
+        },
+        {
+          "key": "tool_call:0",
+          "occurredAt": "2026-07-09T11:00:06Z",
+          "sourcePointer": "/tool_calls/0",
+          "nativeLocator": { "line": 4, "nativeId": "call_00000001" },
+          "payload": {
+            "kind": "tool_call",
+            "toolCallId": "call_00000001",
+            "name": "shell",
+            "inputSummary": "{\"command\":[\"apply_patch\",\"*** Begin Patch\\n*** Add File: greet.go\\n+package main\\n+\\n+func Greet(name string) string { return \\\"Hello, \\\" + name }\\n*** End Patch\"]}"
+          }
+        },
+        {
+          "key": "tool_result:0",
+          "occurredAt": "2026-07-09T11:00:06Z",
+          "sourcePointer": "/tool_calls/0",
+          "nativeLocator": { "line": 5, "nativeId": "call_00000001" },
+          "payload": {
+            "kind": "tool_result",
+            "toolCallId": "call_00000001",
+            "outputSummary": "{\"output\":\"Success. Updated the following files:\\nA greet.go\",\"metadata\":{\"exit_code\":0}}",
+            "isError": false
+          }
+        },
+        {
+          "key": "file_op:0",
+          "occurredAt": "2026-07-09T11:00:06Z",
+          "sourcePointer": "/file_ops/0",
+          "nativeLocator": { "line": 4, "nativeId": "call_00000001" },
+          "payload": {
+            "kind": "file_change",
+            "path": "greet.go",
+            "operation": "create",
+            "summary": "apply_patch via codex"
+          }
+        }
+      ]
+    },
+    {
+      "id": "opencode-basic",
+      "agent": "opencode",
+      "origin": "derived_from_sanitized_fixture",
+      "sourceFixture": "testdata/fixtures/opencode/2026-07-db/session-basic.sql",
+      "sourceGolden": "testdata/fixtures/opencode/2026-07-db/expected-session-basic.json",
+      "events": [
+        {
+          "key": "turn:0",
+          "occurredAt": "2026-07-02T13:46:41Z",
+          "sourcePointer": "/turns/0",
+          "nativeLocator": { "table": "part", "nativeId": "prt_b1a" },
+          "payload": {
+            "kind": "message",
+            "role": "user",
+            "text": "How do I list files in a directory in Go?"
+          }
+        },
+        {
+          "key": "turn:1",
+          "occurredAt": "2026-07-02T13:46:45Z",
+          "sourcePointer": "/turns/1",
+          "nativeLocator": { "table": "part", "nativeId": "prt_b2a" },
+          "payload": {
+            "kind": "message",
+            "role": "assistant",
+            "text": "Use os.ReadDir — it returns entries sorted by filename."
+          }
+        }
+      ]
+    },
+    {
+      "id": "opencode-tools",
+      "agent": "opencode",
+      "origin": "derived_from_sanitized_fixture",
+      "sourceFixture": "testdata/fixtures/opencode/2026-07-db/session-tools.sql",
+      "sourceGolden": "testdata/fixtures/opencode/2026-07-db/expected-session-tools.json",
+      "events": [
+        {
+          "key": "turn:0",
+          "occurredAt": "2026-07-03T17:33:21Z",
+          "sourcePointer": "/turns/0",
+          "nativeLocator": { "table": "part", "nativeId": "prt_t1a" },
+          "payload": {
+            "kind": "message",
+            "role": "user",
+            "text": "Create a config.go that loads settings from TOML."
+          }
+        },
+        {
+          "key": "turn:1",
+          "occurredAt": "2026-07-03T17:33:30Z",
+          "sourcePointer": "/turns/1",
+          "nativeLocator": { "table": "part", "nativeId": "prt_t2a" },
+          "payload": {
+            "kind": "message",
+            "role": "assistant",
+            "text": "Writing config.go now."
+          }
+        },
+        {
+          "key": "tool_call:0",
+          "occurredAt": "2026-07-03T17:33:33Z",
+          "sourcePointer": "/tool_calls/0",
+          "nativeLocator": { "table": "part", "nativeId": "prt_t2b" },
+          "payload": {
+            "kind": "tool_call",
+            "toolCallId": "call_write_1",
+            "name": "write",
+            "inputSummary": "{\"filePath\":\"/home/user/project/config.go\",\"content\":\"package main\\n\"}"
+          }
+        },
+        {
+          "key": "tool_result:0",
+          "occurredAt": "2026-07-03T17:33:33Z",
+          "sourcePointer": "/tool_calls/0",
+          "nativeLocator": { "table": "part", "nativeId": "prt_t2b" },
+          "payload": {
+            "kind": "tool_result",
+            "toolCallId": "call_write_1",
+            "outputSummary": "File written",
+            "isError": false
+          }
+        },
+        {
+          "key": "tool_call:1",
+          "occurredAt": "2026-07-03T17:33:40Z",
+          "sourcePointer": "/tool_calls/1",
+          "nativeLocator": { "table": "part", "nativeId": "prt_t2c" },
+          "payload": {
+            "kind": "tool_call",
+            "toolCallId": "call_bash_1",
+            "name": "bash",
+            "inputSummary": "{\"command\":\"go build ./...\"}"
+          }
+        },
+        {
+          "key": "tool_result:1",
+          "occurredAt": "2026-07-03T17:33:40Z",
+          "sourcePointer": "/tool_calls/1",
+          "nativeLocator": { "table": "part", "nativeId": "prt_t2c" },
+          "payload": {
+            "kind": "tool_result",
+            "toolCallId": "call_bash_1",
+            "outputSummary": "ok",
+            "isError": false
+          }
+        },
+        {
+          "key": "file_op:0",
+          "occurredAt": "2026-07-03T17:33:33Z",
+          "sourcePointer": "/file_ops/0",
+          "nativeLocator": { "table": "part", "nativeId": "prt_t2b" },
+          "payload": {
+            "kind": "file_change",
+            "path": "/home/user/project/config.go",
+            "operation": "create",
+            "summary": "write via opencode"
+          }
+        }
+      ]
+    }
+  ]
+}

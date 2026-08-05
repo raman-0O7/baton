@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "datasetKind": "adapter_parity",
+  "fixtures": [
+    {
+      "id": "claudecode-basic",
+      "agent": "claudecode",
+      "formatVersion": "2026-07",
+      "origin": "derived_from_sanitized_fixture",
+      "nativeFixture": "testdata/fixtures/claudecode/2026-07/session-basic.jsonl",
+      "nativeSha256": "1e167a9e369e363270ddcbd071a5a40b3222f6c1826053524b27222c5e3b542f",
+      "legacyGolden": "testdata/fixtures/claudecode/2026-07/expected-session-basic.json",
+      "legacyGoldenSha256": "f0998b05fb7fba2f6204e3b089ab743660b235909fced1dde1630e6e29574d53",
+      "expectedEventsCase": "claudecode-basic"
+    },
+    {
+      "id": "claudecode-tools",
+      "agent": "claudecode",
+      "formatVersion": "2026-07",
+      "origin": "derived_from_sanitized_fixture",
+      "nativeFixture": "testdata/fixtures/claudecode/2026-07/session-tools.jsonl",
+      "nativeSha256": "356755220161d338e6208da27212eb0bef78d15031f4ad6413f8cf6d6c64094f",
+      "legacyGolden": "testdata/fixtures/claudecode/2026-07/expected-session-tools.json",
+      "legacyGoldenSha256": "ea601b0a67858a65970258be5f4965ed48f36070ebaf93a99a5a3da17e07a0ce",
+      "expectedEventsCase": "claudecode-tools"
+    },
+    {
+      "id": "codex-basic",
+      "agent": "codex",
+      "formatVersion": "2026-07-rollout",
+      "origin": "derived_from_sanitized_fixture",
+      "nativeFixture": "testdata/fixtures/codex/2026-07-rollout/rollout-2026-07-09T10-00-00-aaaa1111-bbbb-4ccc-8ddd-eeee00000001.jsonl",
+      "nativeSha256": "ad874716e8b1eb3ee0314387f446b5f79837b007cc69ea3755e5de4229d55b7c",
+      "legacyGolden": "testdata/fixtures/codex/2026-07-rollout/expected-session-basic.json",
+      "legacyGoldenSha256": "ab2bae66d88a34f77e2946dc1b00ebbfc89a4be3574dbf5f81e05bb814279743",
+      "expectedEventsCase": "codex-basic"
+    },
+    {
+      "id": "codex-tools",
+      "agent": "codex",
+      "formatVersion": "2026-07-rollout",
+      "origin": "derived_from_sanitized_fixture",
+      "nativeFixture": "testdata/fixtures/codex/2026-07-rollout/rollout-2026-07-09T11-00-00-bbbb2222-cccc-4ddd-8eee-ffff00000002.jsonl",
+      "nativeSha256": "23fb5cac43b1d661001bde30c39c4e9cfe97de50a9d3dc705af7be0c6ab0b9d4",
+      "legacyGolden": "testdata/fixtures/codex/2026-07-rollout/expected-session-tools.json",
+      "legacyGoldenSha256": "15660d4b361300dde87f1bb3c37e38e23a53420f04359cf18f647b55608d2dbd",
+      "expectedEventsCase": "codex-tools"
+    },
+    {
+      "id": "opencode-basic",
+      "agent": "opencode",
+      "formatVersion": "2026-07-db",
+      "origin": "derived_from_sanitized_fixture",
+      "nativeFixture": "testdata/fixtures/opencode/2026-07-db/session-basic.sql",
+      "nativeSha256": "c78589620693aab8f46837187d4c78c828ac69337caf8289417bead2b8353c14",
+      "legacyGolden": "testdata/fixtures/opencode/2026-07-db/expected-session-basic.json",
+      "legacyGoldenSha256": "3cd285050101f668c5ff45d1bafb277f29964de15e723d73db001b22766f6d44",
+      "expectedEventsCase": "opencode-basic"
+    },
+    {
+      "id": "opencode-tools",
+      "agent": "opencode",
+      "formatVersion": "2026-07-db",
+      "origin": "derived_from_sanitized_fixture",
+      "nativeFixture": "testdata/fixtures/opencode/2026-07-db/session-tools.sql",
+      "nativeSha256": "d7936e94893413e39d9408d45997222702a9db3a992e07c510f0652d5fa5d1b7",
+      "legacyGolden": "testdata/fixtures/opencode/2026-07-db/expected-session-tools.json",
+      "legacyGoldenSha256": "07368b271aee1dc6f652dacdfcd56d9a2d9f1fc7ec91ff9c59acfbf8d8f3747b",
+      "expectedEventsCase": "opencode-tools"
+    }
+  ]
+}

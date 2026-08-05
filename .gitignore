@@ -1,5 +1,15 @@
 /baton
 /dist/
+**/dist/
 *.test
 coverage.out
 .DS_Store
+node_modules/
+.pnpm-store/
+.turbo/
+.next/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example

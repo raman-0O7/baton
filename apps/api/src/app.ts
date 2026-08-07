@@ -13,6 +13,7 @@ import {
   IngestionStoreError,
   type IngestionRequestContext,
   type IngestionStore,
+  type MemoryStore,
   type RetrievalStore,
   type WorkThreadStore,
 } from '@baton/database';
@@ -47,9 +48,18 @@ import {
   AssignWorkThreadSessionRequestSchema,
   CreateWorkThreadRequestSchema,
   EventReadbackSchema,
+  ApproveMemoryRequestSchema,
+  MemoryCandidateListSchema,
+  MemoryCandidateQuerySchema,
+  MemoryCandidateSchema,
+  MemoryListSchema,
+  MemorySchema,
   ProjectReindexResultSchema,
+  ProposeMemoryRequestSchema,
   RetrievalResultSchema,
   RetrievalSearchQuerySchema,
+  SoulDocumentSchema,
+  SoulQuerySchema,
   SourceSessionListSchema,
   ThreadContextQuerySchema,
   ThreadContextSchema,
@@ -75,6 +85,7 @@ export interface ApiApplicationOptions {
   ingestionStore?: IngestionStore;
   workThreadStore?: WorkThreadStore;
   retrievalStore?: RetrievalStore;
+  memoryStore?: MemoryStore;
   publicApiUrl: string;
   dashboardUrl: string;
   cookieSecret: string;
@@ -772,6 +783,115 @@ export async function buildApi(
     },
   );
 
+  app.post('/v1/memory/candidates', async (request, reply) => {
+    const principal = await authenticate(
+      request,
+      options.identity,
+      sessionCookie,
+      ['memory:write'],
+    );
+    const input = parseSchema(ProposeMemoryRequestSchema, request.body);
+    const output = await requireMemoryStore(options).proposeCandidate(
+      requestContext(principal, request.id),
+      {
+        category: input.category,
+        claim: input.claim,
+        scope: input.scope,
+        evidence: input.evidence.map((item) => ({
+          eventId: item.eventId,
+          projectId: item.projectId,
+          workThreadId: item.workThreadId,
+          text: item.text,
+        })),
+      },
+    );
+    return reply.status(201).send(MemoryCandidateSchema.parse(output));
+  });
+
+  app.get<{ Querystring: { status?: string } }>(
+    '/v1/memory/candidates',
+    async (request, reply) => {
+      const principal = await authenticate(
+        request,
+        options.identity,
+        sessionCookie,
+        ['memory:write'],
+      );
+      const query = parseSchema(MemoryCandidateQuerySchema, request.query);
+      const output = await requireMemoryStore(options).listCandidates(
+        requestContext(principal, request.id),
+        query.status === undefined ? undefined : [query.status],
+      );
+      return reply.send(MemoryCandidateListSchema.parse(output));
+    },
+  );
+
+  app.post<{ Params: { candidateId: string } }>(
+    '/v1/memory/candidates/:candidateId/approve',
+    async (request, reply) => {
+      const principal = await authenticate(
+        request,
+        options.identity,
+        sessionCookie,
+        ['memory:write'],
+      );
+      requireUuid(request.params.candidateId, 'memory candidate');
+      const input = parseSchema(ApproveMemoryRequestSchema, request.body ?? {});
+      const output = await requireMemoryStore(options).approveCandidate(
+        requestContext(principal, request.id),
+        request.params.candidateId,
+        input,
+      );
+      return reply.status(201).send(MemorySchema.parse(output));
+    },
+  );
+
+  app.post<{ Params: { candidateId: string } }>(
+    '/v1/memory/candidates/:candidateId/reject',
+    async (request, reply) => {
+      const principal = await authenticate(
+        request,
+        options.identity,
+        sessionCookie,
+        ['memory:write'],
+      );
+      requireUuid(request.params.candidateId, 'memory candidate');
+      await requireMemoryStore(options).rejectCandidate(
+        requestContext(principal, request.id),
+        request.params.candidateId,
+      );
+      return reply.status(204).send();
+    },
+  );
+
+  app.get('/v1/memory/memories', async (request, reply) => {
+    const principal = await authenticate(
+      request,
+      options.identity,
+      sessionCookie,
+      ['memory:read'],
+    );
+    const output = await requireMemoryStore(options).listMemories(
+      requestContext(principal, request.id),
+    );
+    return reply.send(MemoryListSchema.parse(output));
+  });
+
+  app.get('/v1/memory/soul', async (request, reply) => {
+    const principal = await authenticate(
+      request,
+      options.identity,
+      sessionCookie,
+      ['memory:read'],
+    );
+    const query = parseSchema(SoulQuerySchema, request.query);
+    const output = await requireMemoryStore(options).renderSoulDocument(
+      requestContext(principal, request.id),
+      { tokenBudget: query.tokenBudget ?? 2000 },
+    );
+    return reply.send(SoulDocumentSchema.parse(output));
+  });
+
   app.setNotFoundHandler((request, reply) => {
     return reply
       .type('application/problem+json')
@@ -995,6 +1115,17 @@ function requireRetrievalStore(options: ApiApplicationOptions): RetrievalStore {
     );
   }
   return options.retrievalStore;
+}
+
+function requireMemoryStore(options: ApiApplicationOptions): MemoryStore {
+  if (options.memoryStore === undefined) {
+    throw new HttpError(
+      'internal_error',
+      503,
+      'Cloud memory storage is not configured.',
+    );
+  }
+  return options.memoryStore;
 }
 
 function requestContext(

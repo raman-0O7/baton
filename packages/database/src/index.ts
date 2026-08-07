@@ -11,3 +11,6 @@ export * from './postgres-work-thread-store.js';
 export * from './retrieval-store.js';
 export * from './memory-retrieval-store.js';
 export * from './postgres-retrieval-store.js';
+export * from './memory-store.js';
+export * from './memory-memory-store.js';
+export * from './postgres-memory-store.js';

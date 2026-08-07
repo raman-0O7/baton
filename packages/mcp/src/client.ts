@@ -1,4 +1,5 @@
 import type {
+  Memory,
   RetrievalResult,
   ThreadContext,
   ThreadSuggestionList,
@@ -37,4 +38,5 @@ export interface BatonReadClient {
     options: { query?: string; tokenBudget?: number },
     accessToken: string,
   ): Promise<ThreadContext>;
+  approvedMemories(accessToken: string): Promise<Memory[]>;
 }

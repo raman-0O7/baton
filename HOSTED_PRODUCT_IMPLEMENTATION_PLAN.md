@@ -1,7 +1,7 @@
 # Baton Hosted Product Implementation Plan
 
-**Status:** Phases 0–5 complete; Phase 6 (SOUL memory) is next  
-**Last updated:** 2026-08-05  
+**Status:** Phases 0–6 complete; Phase 7 (trust, lifecycle, paid beta) is next  
+**Last updated:** 2026-08-06  
 **Supersedes for new development:** The product direction in `REQUIREMENTS.md`
 and `IMPLEMENTATION_PLAN.md`. Those documents remain the record of the completed
 local/Git-based prototype.
@@ -1023,6 +1023,35 @@ conversation evidence.
 No rejected or unapproved personal claim reaches an agent. Every approved
 rendered claim has accessible evidence. Prohibited inference tests produce no
 candidate. Contradictory evidence creates review rather than silent overwrite.
+
+**Completion record (2026-08-06):** Phase 6 is gate-complete along the
+deterministic path. A new `packages/memory` provides the core: a pure
+`validateMemoryCandidate` that reproduces every locked memory-corpus verdict —
+accept (repeated cross-project preference), reject (over-broad scope, one-off
+narrow instruction, prohibited sensitive inference), and needs_review
+(contradictory contextual evidence) — plus a prohibited-sensitive-category
+screen (health, political, religion, identity, credentials) that runs on the
+inferred claim so a benign event can never be turned into a sensitive trait; a
+scope-precedence `SOUL.md` renderer where every claim cites its evidence; and a
+`ModelGateway` interface with a dependency-free deterministic extractor that
+quotes transcript text as data, never as instruction (managed-LLM extraction
+stays behind the gateway, disabled by default). `memory_candidates` and
+`memories` tables (migration `0004`, forced RLS) back a `MemoryStore` (Postgres
+and in-memory) with the full lifecycle: propose-through-validation,
+approve/reject/edit/narrower-scope/revoke/expiry, approved-only retrieval, and
+non-regeneration of a rejected proposal. Approval re-screens the final claim, so
+an edit can never introduce a prohibited inference. The hosted API adds
+propose/list/approve/reject/list-memories/SOUL under new `memory:read` and
+`memory:write` scopes; the typed cloud client, a dashboard approval inbox, and
+an MCP `baton_get_approved_memories` tool consume them. The end-to-end gate: a
+prohibited health inference is recorded as rejected and can never be approved;
+an acceptable preference is proposed, approved, and only then returned — through
+the MCP tool a fresh agent sees the approved memory but never the rejected one;
+contradictory evidence yields needs_review, not a silent memory; and a second
+tenant sees none of it. Managed-model extraction cost controls and a richer
+usefulness-metrics dashboard are deferred to Phase 7. (The live PostgreSQL
+memory integration test is CI-covered; it was not exercised locally because the
+local PostgreSQL instance was unavailable at the end of the session.)
 
 ### Phase 7 — Trust, lifecycle, and paid beta
 

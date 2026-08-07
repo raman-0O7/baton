@@ -2,6 +2,10 @@ import type {
   AgentName,
   CollectionPolicy,
   IngestionAcknowledgement,
+  MemoryCategory,
+  MemoryProvenance,
+  MemoryScopeType,
+  MemoryStatus,
   OAuthScope,
   SourceEventPayload,
   WorkThreadSessionAssignment,
@@ -567,6 +571,65 @@ export const chunks = pgTable(
   ],
 );
 
+export const memoryCandidates = pgTable(
+  'memory_candidates',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    candidateId: uuid('candidate_id').notNull(),
+    category: text('category').$type<MemoryCategory>().notNull(),
+    claim: text('claim').notNull(),
+    scopeType: text('scope_type').$type<MemoryScopeType>().notNull(),
+    scopeId: uuid('scope_id'),
+    confidence: integer('confidence_milli').notNull(),
+    status: text('status').$type<MemoryStatus>().notNull(),
+    reasonCode: text('reason_code'),
+    provenance: jsonb('provenance').$type<MemoryProvenance>().notNull(),
+    evidenceEventIds: jsonb('evidence_event_ids').$type<string[]>().notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    primaryKey({ columns: [table.tenantId, table.candidateId] }),
+    index('memory_candidates_tenant_status_idx').on(
+      table.tenantId,
+      table.status,
+      table.updatedAt,
+    ),
+  ],
+);
+
+export const memories = pgTable(
+  'memories',
+  {
+    tenantId: uuid('tenant_id').notNull(),
+    memoryId: uuid('memory_id').notNull(),
+    candidateId: uuid('candidate_id'),
+    category: text('category').$type<MemoryCategory>().notNull(),
+    claim: text('claim').notNull(),
+    scopeType: text('scope_type').$type<MemoryScopeType>().notNull(),
+    scopeId: uuid('scope_id'),
+    confidence: integer('confidence_milli').notNull(),
+    status: text('status').$type<MemoryStatus>().notNull(),
+    provenance: jsonb('provenance').$type<MemoryProvenance>().notNull(),
+    evidenceEventIds: jsonb('evidence_event_ids').$type<string[]>().notNull(),
+    firstObservedAt: timestamp('first_observed_at', {
+      withTimezone: true,
+    }).notNull(),
+    lastConfirmedAt: timestamp('last_confirmed_at', {
+      withTimezone: true,
+    }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    primaryKey({ columns: [table.tenantId, table.memoryId] }),
+    index('memories_tenant_scope_idx').on(
+      table.tenantId,
+      table.status,
+      table.scopeType,
+    ),
+  ],
+);
+
 export const identitySchema = {
   tenants,
   users,
@@ -589,4 +652,6 @@ export const identitySchema = {
   workThreads,
   workThreadSessions,
   chunks,
+  memoryCandidates,
+  memories,
 };

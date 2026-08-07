@@ -22,10 +22,11 @@
     "migration:check": "vitest run test/migrations.test.ts"
   },
   "dependencies": {
-    "@baton/indexing": "workspace:*",
-    "@baton/retrieval": "workspace:*",
     "@baton/auth": "workspace:*",
+    "@baton/indexing": "workspace:*",
+    "@baton/memory": "workspace:*",
     "@baton/protocol": "workspace:*",
+    "@baton/retrieval": "workspace:*",
     "drizzle-orm": "0.45.2",
     "postgres": "3.4.9"
   },

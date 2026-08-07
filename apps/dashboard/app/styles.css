@@ -814,3 +814,27 @@ h1 em {
   padding: 0.4rem 0;
   border-bottom: 1px solid var(--rule);
 }
+
+/* Phase 6 — memory inbox */
+.memory-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.memory-meta {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.memory-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.memory-actions .orange-button {
+  padding: 0.35rem 0.8rem;
+  box-shadow: 3px 3px 0 var(--ink);
+}

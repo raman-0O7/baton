@@ -14,6 +14,15 @@ import {
 import { ApiProblemSchema } from './errors.js';
 import { SourceEventSchema } from './event.js';
 import {
+  ApproveMemoryRequestSchema,
+  MemoryCandidateListSchema,
+  MemoryCandidateSchema,
+  MemoryListSchema,
+  MemorySchema,
+  ProposeMemoryRequestSchema,
+  SoulDocumentSchema,
+} from './memory.js';
+import {
   IngestionAcknowledgementSchema,
   IngestionBatchSchema,
   IngestionCheckpointSchema,
@@ -621,6 +630,114 @@ export function createOpenApiDocument() {
           },
         },
       },
+      '/v1/memory/candidates': {
+        get: {
+          operationId: 'listMemoryCandidates',
+          summary: 'List personal memory candidates awaiting review',
+          security: [{ BatonOAuth: ['memory:write'] }],
+          parameters: [
+            {
+              name: 'status',
+              in: 'query',
+              required: false,
+              schema: {
+                type: 'string',
+                enum: ['proposed', 'needs_review', 'approved', 'rejected'],
+              },
+            },
+          ],
+          responses: {
+            '200': jsonResponse('Memory candidates.', 'MemoryCandidateList'),
+            '401': problemResponse('A valid bearer access token is required.'),
+            '403': problemResponse(
+              'The access token is missing the memory:write scope.',
+            ),
+          },
+        },
+        post: {
+          operationId: 'proposeMemory',
+          summary: 'Propose a personal memory candidate from evidence',
+          security: [{ BatonOAuth: ['memory:write'] }],
+          requestBody: jsonRequest('ProposeMemoryRequest'),
+          responses: {
+            '201': jsonResponse(
+              'The validated candidate (which may be rejected).',
+              'MemoryCandidate',
+            ),
+            '400': problemResponse('The proposal is invalid.'),
+            '401': problemResponse('A valid bearer access token is required.'),
+            '403': problemResponse(
+              'The access token is missing the memory:write scope.',
+            ),
+          },
+        },
+      },
+      '/v1/memory/candidates/{candidateId}/approve': {
+        post: {
+          operationId: 'approveMemory',
+          summary: 'Approve a candidate into an evidence-backed memory',
+          security: [{ BatonOAuth: ['memory:write'] }],
+          parameters: [uuidPathParameter('candidateId')],
+          requestBody: jsonRequest('ApproveMemoryRequest'),
+          responses: {
+            '201': jsonResponse('The approved memory.', 'Memory'),
+            '400': problemResponse(
+              'The claim is a prohibited sensitive inference.',
+            ),
+            '401': problemResponse('A valid bearer access token is required.'),
+            '403': problemResponse(
+              'The access token is missing the memory:write scope.',
+            ),
+            '404': problemResponse('The candidate was not found.'),
+            '409': problemResponse('The candidate cannot be approved.'),
+          },
+        },
+      },
+      '/v1/memory/candidates/{candidateId}/reject': {
+        post: {
+          operationId: 'rejectMemory',
+          summary: 'Reject a memory candidate',
+          security: [{ BatonOAuth: ['memory:write'] }],
+          parameters: [uuidPathParameter('candidateId')],
+          responses: {
+            '204': { description: 'The candidate was rejected.' },
+            '401': problemResponse('A valid bearer access token is required.'),
+            '403': problemResponse(
+              'The access token is missing the memory:write scope.',
+            ),
+            '404': problemResponse('The candidate was not found.'),
+          },
+        },
+      },
+      '/v1/memory/memories': {
+        get: {
+          operationId: 'listApprovedMemories',
+          summary: 'List approved, unexpired personal memories',
+          security: [{ BatonOAuth: ['memory:read'] }],
+          responses: {
+            '200': jsonResponse('Approved memories.', 'MemoryList'),
+            '401': problemResponse('A valid bearer access token is required.'),
+            '403': problemResponse(
+              'The access token is missing the memory:read scope.',
+            ),
+          },
+        },
+      },
+      '/v1/memory/soul': {
+        get: {
+          operationId: 'renderSoul',
+          summary: 'Render approved memories as a budgeted SOUL document',
+          security: [{ BatonOAuth: ['memory:read'] }],
+          parameters: [tokenBudgetQueryParameter()],
+          responses: {
+            '200': jsonResponse('The rendered SOUL document.', 'SoulDocument'),
+            '401': problemResponse('A valid bearer access token is required.'),
+            '403': problemResponse(
+              'The access token is missing the memory:read scope.',
+            ),
+          },
+        },
+      },
     },
     components: {
       securitySchemes: {
@@ -648,6 +765,9 @@ export function createOpenApiDocument() {
                 'ingest:write':
                   'Upload normalized events for enabled projects.',
                 'work:read': 'Read work threads and normalized evidence.',
+                'memory:read': 'Read approved personal memories.',
+                'memory:write':
+                  'Propose, approve, edit, and revoke personal memories.',
               },
             },
           },
@@ -696,6 +816,13 @@ export function createOpenApiDocument() {
         RetrievalResult: componentSchema(RetrievalResultSchema),
         ThreadContext: componentSchema(ThreadContextSchema),
         ProjectReindexResult: componentSchema(ProjectReindexResultSchema),
+        ProposeMemoryRequest: componentSchema(ProposeMemoryRequestSchema),
+        ApproveMemoryRequest: componentSchema(ApproveMemoryRequestSchema),
+        MemoryCandidate: componentSchema(MemoryCandidateSchema),
+        MemoryCandidateList: componentSchema(MemoryCandidateListSchema),
+        Memory: componentSchema(MemorySchema),
+        MemoryList: componentSchema(MemoryListSchema),
+        SoulDocument: componentSchema(SoulDocumentSchema),
         EventReadback: componentSchema(EventReadbackSchema),
         ApiProblem: componentSchema(ApiProblemSchema),
       },

@@ -175,6 +175,9 @@ importers:
       '@baton/indexing':
         specifier: workspace:*
         version: link:../indexing
+      '@baton/memory':
+        specifier: workspace:*
+        version: link:../memory
       '@baton/protocol':
         specifier: workspace:*
         version: link:../protocol
@@ -230,6 +233,12 @@ importers:
       zod:
         specifier: 4.4.3
         version: 4.4.3
+
+  packages/memory:
+    dependencies:
+      '@baton/protocol':
+        specifier: workspace:*
+        version: link:../protocol
 
   packages/observability:
     dependencies:

@@ -15,8 +15,13 @@ import {
   ProjectSchema,
   TokenResponseSchema,
   EventReadbackSchema,
+  MemoryCandidateListSchema,
+  MemoryCandidateSchema,
+  MemoryListSchema,
+  MemorySchema,
   ProjectReindexResultSchema,
   RetrievalResultSchema,
+  SoulDocumentSchema,
   SourceSessionListSchema,
   ThreadContextSchema,
   ThreadSuggestionListSchema,
@@ -36,10 +41,15 @@ import {
   type CreateWorkThreadRequest,
   type Device,
   type DeviceAuthorizationRequest,
+  type ApproveMemoryRequest,
   type EventReadback,
   type IngestionAcknowledgement,
   type IngestionCheckpoint,
+  type Memory,
+  type MemoryCandidate,
   type OAuthScope,
+  type ProposeMemoryRequest,
+  type SoulDocument,
   type Project,
   type ProjectReindexResult,
   type RetrievalResult,
@@ -437,6 +447,71 @@ export class BatonCloudClient {
     );
   }
 
+  proposeMemory(
+    input: ProposeMemoryRequest,
+    accessToken: string,
+  ): Promise<MemoryCandidate> {
+    return this.request('/v1/memory/candidates', MemoryCandidateSchema, {
+      method: 'POST',
+      accessToken,
+      body: input,
+    });
+  }
+
+  async memoryCandidates(
+    accessToken: string,
+    status?: string,
+  ): Promise<MemoryCandidate[]> {
+    const suffix =
+      status === undefined
+        ? ''
+        : `?${new URLSearchParams({ status }).toString()}`;
+    return (
+      await this.request(
+        `/v1/memory/candidates${suffix}`,
+        MemoryCandidateListSchema,
+        { accessToken },
+      )
+    ).candidates;
+  }
+
+  approveMemory(
+    candidateId: string,
+    input: ApproveMemoryRequest,
+    accessToken: string,
+  ): Promise<Memory> {
+    return this.request(
+      `/v1/memory/candidates/${encodeURIComponent(candidateId)}/approve`,
+      MemorySchema,
+      { method: 'POST', accessToken, body: input },
+    );
+  }
+
+  async rejectMemory(candidateId: string, accessToken: string): Promise<void> {
+    await this.requestEmpty(
+      `/v1/memory/candidates/${encodeURIComponent(candidateId)}/reject`,
+      { method: 'POST', accessToken },
+    );
+  }
+
+  async approvedMemories(accessToken: string): Promise<Memory[]> {
+    return (
+      await this.request('/v1/memory/memories', MemoryListSchema, {
+        accessToken,
+      })
+    ).memories;
+  }
+
+  soul(accessToken: string, tokenBudget?: number): Promise<SoulDocument> {
+    const suffix =
+      tokenBudget === undefined
+        ? ''
+        : `?${new URLSearchParams({ tokenBudget: String(tokenBudget) }).toString()}`;
+    return this.request(`/v1/memory/soul${suffix}`, SoulDocumentSchema, {
+      accessToken,
+    });
+  }
+
   approveDevice(userCode: string, browserCookie: string) {
     return this.request(
       '/v1/auth/device/approve',
@@ -515,6 +590,7 @@ export function scopesForCli(): OAuthScope[] {
     'projects:write',
     'ingest:write',
     'work:read',
+    'memory:read',
   ];
 }
 

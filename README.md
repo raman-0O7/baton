@@ -13,12 +13,14 @@ The hosted product has completed its Phase 0 engineering foundation, Phase 1
 cloud identity/device-login foundation, Phase 2 incremental capture and cloud
 sync (live PostgreSQL gate included), Phase 3 cross-agent work threads with a
 first useful dashboard, Phase 4 indexed retrieval with a token-budgeted, fully
-cited context compiler, and Phase 5 a read-only Baton MCP surface. A work thread
-can begin in Claude on one device and continue in Codex on another as a single,
-user-confirmed thread, and a fresh agent — through the Baton MCP server —
-resumes it with a compact, cited context instead of the whole transcript. Phase
-6 (SOUL memory and personalization) is next. It is not yet available as a
-production service.
+cited context compiler, Phase 5 a read-only Baton MCP surface, and Phase 6
+user-approved, evidence-backed personal memory. A work thread can begin in
+Claude on one device and continue in Codex on another as a single,
+user-confirmed thread; a fresh agent — through the Baton MCP server — resumes it
+with a compact, cited context instead of the whole transcript; and Baton
+proposes personal preferences that only reach an agent after the user approves
+them. Phase 7 (trust, lifecycle, and paid beta) is next. It is not yet available
+as a production service.
 
 ## Product direction
 
@@ -76,9 +78,11 @@ command. Phase 4 adds indexed retrieval: a semantic-boundary chunker,
 deterministic lexical search (PostgreSQL full-text search with an in-memory
 mirror), and a token-budgeted, fully cited context compiler exposed as retrieval
 search and thread-context APIs plus dashboard search. Phase 5 adds the read-only
-Baton MCP surface: five cited-context tools, a stdio MCP server, and the
-`baton mcp` command so a fresh agent can resume a work thread without the full
-transcript.
+Baton MCP surface: cited-context tools, a stdio MCP server, and the `baton mcp`
+command so a fresh agent can resume a work thread without the full transcript.
+Phase 6 adds layered personal memory: a deterministic candidate validator with a
+prohibited-sensitive-category filter, a SOUL renderer, an approval inbox, and an
+MCP tool that returns only user-approved, evidence-backed claims.
 
 For local hosted setup, see
 [`docs/development/hosted-local.md`](docs/development/hosted-local.md). The

@@ -498,6 +498,8 @@ const allBrowserScopes: OAuthScope[] = [
   'projects:read',
   'projects:write',
   'work:read',
+  'memory:read',
+  'memory:write',
 ];
 
 function createTokenIssuance(

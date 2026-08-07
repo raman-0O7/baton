@@ -8,6 +8,8 @@ export const OAuthScopeSchema = z.enum([
   'projects:write',
   'ingest:write',
   'work:read',
+  'memory:read',
+  'memory:write',
 ]);
 export type OAuthScope = z.infer<typeof OAuthScopeSchema>;
 

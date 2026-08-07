@@ -109,6 +109,9 @@ const threadContextShape = {
 } satisfies z.ZodRawShape;
 const threadContextInput = z.object(threadContextShape).strict();
 
+const approvedMemoriesShape = {} satisfies z.ZodRawShape;
+const approvedMemoriesInput = z.object(approvedMemoriesShape).strict();
+
 export const batonMcpTools: BatonMcpTool[] = [
   {
     name: 'baton_list_threads',
@@ -263,6 +266,28 @@ export const batonMcpTools: BatonMcpTool[] = [
         );
         const body = `${context.bootstrap.text}\n\n${context.evidence.text}`;
         return { content: text(body), structuredContent: { context } };
+      }),
+  },
+  {
+    name: 'baton_get_approved_memories',
+    title: 'Get approved personal memories',
+    description:
+      'Return the user-approved personal memories (preferences and workflows). Only approved, evidence-backed claims are returned; nothing unapproved is ever exposed.',
+    inputSchema: approvedMemoriesInput,
+    inputShape: approvedMemoriesShape,
+    handle: (client, token) =>
+      guard(async () => {
+        const memories = await client.approvedMemories(token);
+        const lines =
+          memories.length === 0
+            ? 'No approved memories.'
+            : memories
+                .map(
+                  (memory) =>
+                    `- ${memory.claim} (${memory.category}, ${memory.scope.type}) — evidence ${memory.evidenceEventIds.join(', ')}`,
+                )
+                .join('\n');
+        return { content: text(lines), structuredContent: { memories } };
       }),
   },
 ];

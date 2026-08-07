@@ -66,6 +66,10 @@ class StubClient implements BatonReadClient {
     this.guard(accessToken);
     return this.data.context!;
   }
+  async approvedMemories(accessToken: string) {
+    this.guard(accessToken);
+    return [];
+  }
 }
 
 describe('baton MCP tools', () => {

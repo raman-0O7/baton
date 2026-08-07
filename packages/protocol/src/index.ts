@@ -3,6 +3,7 @@ export * from './canonical-json.js';
 export * from './errors.js';
 export * from './event.js';
 export * from './ingestion.js';
+export * from './memory.js';
 export * from './openapi.js';
 export * from './project.js';
 export * from './readback.js';

@@ -54,6 +54,9 @@ const stub: BatonReadClient = {
       chunks: [],
     };
   },
+  async approvedMemories() {
+    return [];
+  },
   async workThreadContext(): Promise<ThreadContext> {
     return {
       workThreadId,
@@ -100,6 +103,7 @@ describe('baton MCP server over a live transport', () => {
     const { tools } = await client.listTools();
     const names = tools.map((tool) => tool.name).sort();
     expect(names).toEqual([
+      'baton_get_approved_memories',
       'baton_get_thread_context',
       'baton_get_thread_overview',
       'baton_list_threads',

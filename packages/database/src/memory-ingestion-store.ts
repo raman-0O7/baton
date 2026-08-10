@@ -556,6 +556,95 @@ export class InMemoryIngestionStore implements IngestionStore {
     );
   }
 
+  exportProjects(tenantId: string): Project[] {
+    return [...this.projects.values()]
+      .filter((project) => project.tenantId === tenantId)
+      .map(projectResponse);
+  }
+
+  exportEvents(tenantId: string, projectId: string | null): SourceEvent[] {
+    const events: SourceEvent[] = [];
+    for (const [key, event] of this.eventsById) {
+      if (!key.startsWith(`${tenantId}:`)) continue;
+      const session = this.sourceSessions.get(
+        sourceSessionKey(tenantId, event.sourceSessionId),
+      );
+      if (projectId !== null && session?.projectId !== projectId) continue;
+      events.push(structuredClone(event));
+    }
+    return events;
+  }
+
+  /**
+   * Purge capture data for a project (or the whole tenant when projectId is
+   * null). Removes events, sessions, checkpoints, batches, consents,
+   * installations, and the project rows themselves, returning per-collection
+   * counts so deletion is observable.
+   */
+  purge(tenantId: string, projectId: string | null): Record<string, number> {
+    const counts = {
+      events: 0,
+      source_sessions: 0,
+      ingestion_checkpoints: 0,
+      ingestion_batches: 0,
+      consent_records: 0,
+      project_installations: 0,
+      projects: 0,
+    };
+    const sessionInProject = new Set<string>();
+    for (const [key, session] of [...this.sourceSessions]) {
+      if (session.tenantId !== tenantId) continue;
+      if (projectId !== null && session.projectId !== projectId) continue;
+      sessionInProject.add(session.sourceSessionId);
+      this.sourceSessions.delete(key);
+      counts.source_sessions += 1;
+    }
+    for (const [key, event] of [...this.eventsById]) {
+      if (!key.startsWith(`${tenantId}:`)) continue;
+      if (projectId !== null && !sessionInProject.has(event.sourceSessionId))
+        continue;
+      this.eventsById.delete(key);
+      this.eventIdByIdempotency.delete(
+        tenantEntityKey(tenantId, event.idempotencyKey),
+      );
+      counts.events += 1;
+    }
+    for (const [key, checkpoint] of [...this.checkpoints]) {
+      if (!key.startsWith(`${tenantId}:`)) continue;
+      if (projectId !== null && checkpoint.projectId !== projectId) continue;
+      this.checkpoints.delete(key);
+      counts.ingestion_checkpoints += 1;
+    }
+    // Batch receipts carry no project scope in memory, so they are cleared only
+    // on a whole-tenant purge (they hold no conversation content — just digests).
+    if (projectId === null) {
+      for (const [key] of [...this.batches]) {
+        if (!key.startsWith(`${tenantId}:`)) continue;
+        this.batches.delete(key);
+        counts.ingestion_batches += 1;
+      }
+    }
+    for (const [key, consent] of [...this.consents]) {
+      if (consent.tenantId !== tenantId) continue;
+      if (projectId !== null && consent.projectId !== projectId) continue;
+      this.consents.delete(key);
+      counts.consent_records += 1;
+    }
+    for (const [key, installation] of [...this.installations]) {
+      if (installation.tenantId !== tenantId) continue;
+      if (projectId !== null && installation.projectId !== projectId) continue;
+      this.installations.delete(key);
+      counts.project_installations += 1;
+    }
+    for (const [key, project] of [...this.projects]) {
+      if (project.tenantId !== tenantId) continue;
+      if (projectId !== null && project.projectId !== projectId) continue;
+      this.projects.delete(key);
+      counts.projects += 1;
+    }
+    return counts;
+  }
+
   private requireProject(
     context: IngestionRequestContext,
     projectId: string,

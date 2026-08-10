@@ -13,6 +13,7 @@ import {
 } from './auth.js';
 import { ApiProblemSchema } from './errors.js';
 import { SourceEventSchema } from './event.js';
+import { DeletionReceiptSchema, ExportArchiveSchema } from './lifecycle.js';
 import {
   ApproveMemoryRequestSchema,
   MemoryCandidateListSchema,
@@ -630,6 +631,59 @@ export function createOpenApiDocument() {
           },
         },
       },
+      '/v1/account/export': {
+        get: {
+          operationId: 'exportAccount',
+          summary: 'Export the account (or one project) as a JSON archive',
+          security: [{ BatonOAuth: ['account:read'] }, { BrowserSession: [] }],
+          parameters: [uuidQueryParameter('projectId', false)],
+          responses: {
+            '200': jsonResponse('The export archive.', 'ExportArchive'),
+            '401': problemResponse(
+              'A valid session or access token is required.',
+            ),
+            '403': problemResponse(
+              'The access token is missing the account:read scope.',
+            ),
+            '404': problemResponse('The project was not found.'),
+          },
+        },
+      },
+      '/v1/projects/{projectId}/delete': {
+        post: {
+          operationId: 'deleteProject',
+          summary: 'Delete a project across every store',
+          security: [
+            { BatonOAuth: ['projects:write'] },
+            { BrowserSession: [] },
+          ],
+          parameters: [uuidPathParameter('projectId')],
+          responses: {
+            '200': jsonResponse('The deletion receipt.', 'DeletionReceipt'),
+            '401': problemResponse(
+              'A valid session or access token is required.',
+            ),
+            '403': problemResponse(
+              'The access token is missing the projects:write scope.',
+            ),
+            '404': problemResponse('The project was not found.'),
+          },
+        },
+      },
+      '/v1/account/delete': {
+        post: {
+          operationId: 'deleteAccount',
+          summary: 'Delete all account content (dashboard session only)',
+          security: [{ BrowserSession: [] }],
+          responses: {
+            '200': jsonResponse('The deletion receipt.', 'DeletionReceipt'),
+            '401': problemResponse('A valid session is required.'),
+            '403': problemResponse(
+              'Account deletion must be performed from the dashboard.',
+            ),
+          },
+        },
+      },
       '/v1/memory/candidates': {
         get: {
           operationId: 'listMemoryCandidates',
@@ -823,6 +877,8 @@ export function createOpenApiDocument() {
         Memory: componentSchema(MemorySchema),
         MemoryList: componentSchema(MemoryListSchema),
         SoulDocument: componentSchema(SoulDocumentSchema),
+        ExportArchive: componentSchema(ExportArchiveSchema),
+        DeletionReceipt: componentSchema(DeletionReceiptSchema),
         EventReadback: componentSchema(EventReadbackSchema),
         ApiProblem: componentSchema(ApiProblemSchema),
       },

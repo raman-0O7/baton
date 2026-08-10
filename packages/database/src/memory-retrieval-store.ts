@@ -79,6 +79,17 @@ export class InMemoryRetrievalStore implements RetrievalStore {
     };
   }
 
+  purge(tenantId: string, projectId: string | null): Record<string, number> {
+    let chunks = 0;
+    for (const [mapKey, list] of [...this.chunksByProject]) {
+      if (!mapKey.startsWith(`${tenantId}:`)) continue;
+      if (projectId !== null && mapKey !== `${tenantId}:${projectId}`) continue;
+      chunks += list.length;
+      this.chunksByProject.delete(mapKey);
+    }
+    return { chunks };
+  }
+
   private requireProject(
     context: IngestionRequestContext,
     projectId: string,

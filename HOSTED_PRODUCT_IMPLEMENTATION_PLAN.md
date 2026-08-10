@@ -1,6 +1,7 @@
 # Baton Hosted Product Implementation Plan
 
-**Status:** Phases 0–6 complete; Phase 7 (trust, lifecycle, paid beta) is next  
+**Status:** Phases 0–7 complete; Phase 8 is post-v1 and deferred until usage
+metrics justify it  
 **Last updated:** 2026-08-06  
 **Supersedes for new development:** The product direction in `REQUIREMENTS.md`
 and `IMPLEMENTATION_PLAN.md`. Those documents remain the record of the completed
@@ -1090,6 +1091,42 @@ local PostgreSQL instance was unavailable at the end of the session.)
 Private-beta users can onboard without staff help, continue cross-agent work,
 inspect and correct memory, export/delete their data, and operate within
 published latency/reliability targets. Restore and deletion drills pass.
+
+**Completion record (2026-08-06):** Phase 7's application deliverables are
+complete and tested; the remaining items are infrastructure and legal that are
+provisioned per environment, documented here as the operator/counsel contract.
+
+Built and gated in code: a `LifecycleStore` (Postgres and in-memory) that
+exports the caller's own content (projects, normalized events, work threads,
+approved memories) as a documented JSON archive, and deletes a project or an
+entire account across every store — chunks, memories, work threads, events,
+sessions, checkpoints, batches, consents, installations, artifacts, and the
+project rows — in one transaction, returning a per-collection deletion receipt.
+The hosted API adds `GET /v1/account/export`, `POST /v1/projects/:id/delete`,
+and `POST /v1/account/delete` (the last restricted to the interactive dashboard
+session), with typed cloud-client methods and a dashboard privacy page (export
+download and confirmed account deletion). The end-to-end gate proves that after
+deletion no content is queryable through `/v1/projects`, `/v1/work-threads`,
+`/v1/retrieval/search`, or `/v1/memory/memories`
+(`apps/api/test/lifecycle.e2e.test.ts`,
+`packages/database/test/lifecycle-store.test.ts`, and a CI PostgreSQL cascade
+test). Deterministic account quotas, model-cost budgets, and a retention policy
+with an expiry check live in `@baton/protocol` (`quotaPlans`, `checkQuota`,
+`withinModelBudget`, `isRetentionExpired`) so cost/abuse bounds are explicit and
+capture keeps working when a model budget is exhausted. The CLI adds
+`baton migrate cloud --dry-run`, a read-only preview that detects legacy Git
+configuration and describes what a confirmed migration would do without writing
+anything. Operator runbooks (`docs/operations/runbooks.md`) cover
+backup/restore, disaster recovery, the deletion drill, quotas/degradation, and
+staged rollout; the trust/privacy/terms/subprocessors/no-training outline is in
+`docs/legal/trust-and-privacy.md`.
+
+Provisioned per environment, not code in this repository (documented as the
+operator contract): managed PostgreSQL PITR and backups, object-storage
+lifecycle, a real billing/metering integration, live disaster-recovery infra,
+executed performance/load and accessibility testing, and email/notification
+delivery. Quota/retention enforcement points and the expiry sweep are wired to
+the tested policy primitives above.
 
 ### Phase 8 — Post-v1 options, validated by usage
 

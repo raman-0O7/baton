@@ -13,6 +13,7 @@ import {
   IngestionStoreError,
   type IngestionRequestContext,
   type IngestionStore,
+  type LifecycleStore,
   type MemoryStore,
   type RetrievalStore,
   type WorkThreadStore,
@@ -49,6 +50,9 @@ import {
   CreateWorkThreadRequestSchema,
   EventReadbackSchema,
   ApproveMemoryRequestSchema,
+  DeletionReceiptSchema,
+  ExportArchiveSchema,
+  ExportQuerySchema,
   MemoryCandidateListSchema,
   MemoryCandidateQuerySchema,
   MemoryCandidateSchema,
@@ -86,6 +90,7 @@ export interface ApiApplicationOptions {
   workThreadStore?: WorkThreadStore;
   retrievalStore?: RetrievalStore;
   memoryStore?: MemoryStore;
+  lifecycleStore?: LifecycleStore;
   publicApiUrl: string;
   dashboardUrl: string;
   cookieSecret: string;
@@ -892,6 +897,73 @@ export async function buildApi(
     return reply.send(SoulDocumentSchema.parse(output));
   });
 
+  app.get<{ Querystring: { projectId?: string } }>(
+    '/v1/account/export',
+    async (request, reply) => {
+      const principal = await authenticate(
+        request,
+        options.identity,
+        sessionCookie,
+        ['account:read'],
+      );
+      const query = parseSchema(ExportQuerySchema, request.query);
+      const content = await requireLifecycleStore(options).exportContent(
+        requestContext(principal, request.id),
+        query.projectId ?? null,
+      );
+      const account = await options.identity.accountFor(principal);
+      return reply.send(
+        ExportArchiveSchema.parse({
+          schemaVersion: 1,
+          scope: query.projectId === undefined ? 'account' : 'project',
+          exportedAt: new Date().toISOString(),
+          account,
+          ...content,
+        }),
+      );
+    },
+  );
+
+  app.post<{ Params: { projectId: string } }>(
+    '/v1/projects/:projectId/delete',
+    async (request, reply) => {
+      const principal = await authenticate(
+        request,
+        options.identity,
+        sessionCookie,
+        ['projects:write'],
+      );
+      requireUuid(request.params.projectId, 'project');
+      const output = await requireLifecycleStore(options).deleteProject(
+        requestContext(principal, request.id),
+        request.params.projectId,
+      );
+      return reply.send(DeletionReceiptSchema.parse(output));
+    },
+  );
+
+  app.post('/v1/account/delete', async (request, reply) => {
+    const principal = await authenticate(
+      request,
+      options.identity,
+      sessionCookie,
+      ['projects:write'],
+    );
+    // Account deletion is destructive: require the interactive browser session,
+    // not a long-lived device token.
+    if (principal.credentialKind !== 'browser_session') {
+      throw new HttpError(
+        'access_denied',
+        403,
+        'Account deletion must be performed from the dashboard.',
+      );
+    }
+    const output = await requireLifecycleStore(options).deleteAccount(
+      requestContext(principal, request.id),
+    );
+    return reply.send(DeletionReceiptSchema.parse(output));
+  });
+
   app.setNotFoundHandler((request, reply) => {
     return reply
       .type('application/problem+json')
@@ -1126,6 +1198,17 @@ function requireMemoryStore(options: ApiApplicationOptions): MemoryStore {
     );
   }
   return options.memoryStore;
+}
+
+function requireLifecycleStore(options: ApiApplicationOptions): LifecycleStore {
+  if (options.lifecycleStore === undefined) {
+    throw new HttpError(
+      'internal_error',
+      503,
+      'Cloud lifecycle storage is not configured.',
+    );
+  }
+  return options.lifecycleStore;
 }
 
 function requestContext(

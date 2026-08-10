@@ -336,6 +336,36 @@ export class InMemoryWorkThreadStore implements WorkThreadStore {
     });
   }
 
+  exportThreads(tenantId: string, projectId: string | null): WorkThread[] {
+    return [...this.threads.values()]
+      .filter(
+        (thread) =>
+          thread.tenantId === tenantId &&
+          (projectId === null || thread.projectId === projectId),
+      )
+      .map(threadResponse);
+  }
+
+  purge(tenantId: string, projectId: string | null): Record<string, number> {
+    const counts = { work_threads: 0, work_thread_sessions: 0 };
+    const removedThreads = new Set<string>();
+    for (const [key, thread] of [...this.threads]) {
+      if (thread.tenantId !== tenantId) continue;
+      if (projectId !== null && thread.projectId !== projectId) continue;
+      removedThreads.add(thread.workThreadId);
+      this.threads.delete(key);
+      counts.work_threads += 1;
+    }
+    for (const [key, link] of [...this.threadSessionLinks]) {
+      if (link.tenantId !== tenantId) continue;
+      if (projectId !== null && !removedThreads.has(link.workThreadId))
+        continue;
+      this.threadSessionLinks.delete(key);
+      counts.work_thread_sessions += 1;
+    }
+    return counts;
+  }
+
   private threadSessions(
     context: IngestionRequestContext,
     workThreadId: string,

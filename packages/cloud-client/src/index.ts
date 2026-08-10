@@ -14,7 +14,9 @@ import {
   ProjectListSchema,
   ProjectSchema,
   TokenResponseSchema,
+  DeletionReceiptSchema,
   EventReadbackSchema,
+  ExportArchiveSchema,
   MemoryCandidateListSchema,
   MemoryCandidateSchema,
   MemoryListSchema,
@@ -42,7 +44,9 @@ import {
   type Device,
   type DeviceAuthorizationRequest,
   type ApproveMemoryRequest,
+  type DeletionReceipt,
   type EventReadback,
+  type ExportArchive,
   type IngestionAcknowledgement,
   type IngestionCheckpoint,
   type Memory,
@@ -510,6 +514,30 @@ export class BatonCloudClient {
     return this.request(`/v1/memory/soul${suffix}`, SoulDocumentSchema, {
       accessToken,
     });
+  }
+
+  exportAccount(
+    accessToken: string,
+    projectId?: string,
+  ): Promise<ExportArchive> {
+    const suffix =
+      projectId === undefined
+        ? ''
+        : `?${new URLSearchParams({ projectId }).toString()}`;
+    return this.request(`/v1/account/export${suffix}`, ExportArchiveSchema, {
+      accessToken,
+    });
+  }
+
+  deleteProject(
+    projectId: string,
+    accessToken: string,
+  ): Promise<DeletionReceipt> {
+    return this.request(
+      `/v1/projects/${encodeURIComponent(projectId)}/delete`,
+      DeletionReceiptSchema,
+      { method: 'POST', accessToken },
+    );
   }
 
   approveDevice(userCode: string, browserCookie: string) {

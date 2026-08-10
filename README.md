@@ -13,14 +13,18 @@ The hosted product has completed its Phase 0 engineering foundation, Phase 1
 cloud identity/device-login foundation, Phase 2 incremental capture and cloud
 sync (live PostgreSQL gate included), Phase 3 cross-agent work threads with a
 first useful dashboard, Phase 4 indexed retrieval with a token-budgeted, fully
-cited context compiler, Phase 5 a read-only Baton MCP surface, and Phase 6
-user-approved, evidence-backed personal memory. A work thread can begin in
-Claude on one device and continue in Codex on another as a single,
-user-confirmed thread; a fresh agent — through the Baton MCP server — resumes it
-with a compact, cited context instead of the whole transcript; and Baton
-proposes personal preferences that only reach an agent after the user approves
-them. Phase 7 (trust, lifecycle, and paid beta) is next. It is not yet available
-as a production service.
+cited context compiler, Phase 5 a read-only Baton MCP surface, Phase 6
+user-approved, evidence-backed personal memory, and Phase 7 the trust and
+lifecycle layer — export, cross-store deletion, quotas, and a privacy dashboard.
+A work thread can begin in Claude on one device and continue in Codex on another
+as a single, user-confirmed thread; a fresh agent — through the Baton MCP server
+— resumes it with a compact, cited context instead of the whole transcript;
+Baton proposes personal preferences that only reach an agent after the user
+approves them; and a user can export or permanently delete all of their data at
+any time. The application is feature-complete through the plan's Phase 7; Phase
+8 options are deferred until usage justifies them, and remaining production
+readiness is operational (managed infrastructure, billing, load and
+accessibility testing). It is not yet available as a production service.
 
 ## Product direction
 
@@ -82,7 +86,11 @@ Baton MCP surface: cited-context tools, a stdio MCP server, and the `baton mcp`
 command so a fresh agent can resume a work thread without the full transcript.
 Phase 6 adds layered personal memory: a deterministic candidate validator with a
 prohibited-sensitive-category filter, a SOUL renderer, an approval inbox, and an
-MCP tool that returns only user-approved, evidence-backed claims.
+MCP tool that returns only user-approved, evidence-backed claims. Phase 7 adds
+the trust and lifecycle layer: account/project export, cross-store deletion with
+an observable receipt, deterministic quotas and retention, a privacy dashboard,
+and `baton migrate cloud --dry-run`. Operator runbooks and the trust/privacy
+outline are under `docs/operations/` and `docs/legal/`.
 
 For local hosted setup, see
 [`docs/development/hosted-local.md`](docs/development/hosted-local.md). The

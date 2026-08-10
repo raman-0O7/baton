@@ -129,6 +129,9 @@ export function Dashboard() {
           <Link className="text-link" href="/memory">
             Review memory <span>↗</span>
           </Link>
+          <Link className="text-link" href="/privacy">
+            Privacy &amp; data <span>↗</span>
+          </Link>
           <button type="button" onClick={() => void signOut()}>
             Sign out →
           </button>

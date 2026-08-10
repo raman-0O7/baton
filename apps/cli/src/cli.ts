@@ -105,6 +105,8 @@ export async function runCli(
         }
         await mcpServe(dependencies);
         return 0;
+      case 'migrate':
+        return migrateCloud(dependencies, args);
       case 'help':
       case '--help':
       case '-h':
@@ -564,6 +566,59 @@ async function printThreadBootstrap(
   );
 }
 
+async function migrateCloud(
+  dependencies: CliDependencies,
+  args: string[],
+): Promise<number> {
+  if (args[1] !== 'cloud') {
+    dependencies.io.error('Usage: baton migrate cloud --dry-run');
+    return 2;
+  }
+  if (!args.includes('--dry-run')) {
+    dependencies.io.error(
+      'Only `baton migrate cloud --dry-run` is available. A real migration requires explicit confirmation and is not yet enabled.',
+    );
+    return 2;
+  }
+  dependencies.io.out('Baton cloud migration — DRY RUN');
+  dependencies.io.out(
+    'This previews an upload only. Nothing is uploaded, moved, or deleted, and existing Git repositories and age keys are left untouched.',
+  );
+  dependencies.io.out('');
+
+  const finding = await detectLegacyGitConfiguration();
+  if (!finding.found) {
+    dependencies.io.out(
+      'No legacy Git-mode Baton configuration was found on this device.',
+    );
+    dependencies.io.out(
+      'To start fresh cloud capture instead, run `baton login` then `baton enable`.',
+    );
+    return 0;
+  }
+  dependencies.io.out(
+    `Legacy Git configuration detected at ${finding.configPath ?? 'the prior Baton config path'}.`,
+  );
+  dependencies.io.out(
+    'A real migration would, only after explicit confirmation:',
+  );
+  dependencies.io.out(
+    '  - detect projects and conversations, and show their date range;',
+  );
+  dependencies.io.out(
+    '  - estimate the post-policy upload size and expected secret redactions;',
+  );
+  dependencies.io.out(
+    `  - apply the current collection policy (${DEFAULT_COLLECTION_POLICY.policyVersion}) and local secret scrubbing before any upload.`,
+  );
+  for (const line of finding.guidance) dependencies.io.out(`  ${line}`);
+  dependencies.io.out('');
+  dependencies.io.out(
+    'No changes were made. Re-run without --dry-run once confirmed migration is available.',
+  );
+  return 0;
+}
+
 async function mcpServe(dependencies: CliDependencies): Promise<void> {
   const credentials = await freshCredentials(
     dependencies,
@@ -878,6 +933,7 @@ function printHelp(io: CliIo): void {
   io.out('  baton continue [PATH] [--thread ID]');
   io.out('  baton mcp                 (read-only MCP server over stdio)');
   io.out('  baton mcp install [AGENT] (print MCP configuration)');
+  io.out('  baton migrate cloud --dry-run');
   io.out('  baton whoami');
   io.out('  baton logout');
   io.out('  baton doctor');

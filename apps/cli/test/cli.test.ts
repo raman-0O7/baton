@@ -215,6 +215,30 @@ describe('cloud CLI', () => {
     expect(output.join('\n')).toContain('nothing was collected');
   });
 
+  it('previews a cloud migration as a read-only dry run', async () => {
+    const output: string[] = [];
+    const result = await runCli(['migrate', 'cloud', '--dry-run'], {
+      apiUrl: 'https://api.example.com',
+      store: new MemoryCredentialStore(),
+      io: collectingIo(output),
+    });
+    expect(result).toBe(0);
+    const text = output.join('\n');
+    expect(text).toContain('DRY RUN');
+    expect(text).toContain('Nothing is uploaded, moved, or deleted');
+  });
+
+  it('refuses a non-dry-run migration', async () => {
+    const output: string[] = [];
+    const result = await runCli(['migrate', 'cloud'], {
+      apiUrl: 'https://api.example.com',
+      store: new MemoryCredentialStore(),
+      io: collectingIo(output),
+    });
+    expect(result).toBe(2);
+    expect(output.join('\n')).toContain('--dry-run');
+  });
+
   it('disables locally before an offline cloud revocation attempt', async () => {
     const runtime = testSyncRuntime();
     await runtime.installations.enable({

@@ -235,6 +235,40 @@ export class InMemoryMemoryStore implements MemoryStore {
     );
   }
 
+  exportMemories(tenantId: string, projectId: string | null): Memory[] {
+    return [...this.memories.values()]
+      .filter(
+        (entry) =>
+          entry.tenantId === tenantId &&
+          entry.memory.status === 'approved' &&
+          (projectId === null ||
+            (entry.memory.scope.type === 'project' &&
+              entry.memory.scope.id === projectId)),
+      )
+      .map((entry) => structuredClone(entry.memory));
+  }
+
+  purge(tenantId: string, projectId: string | null): Record<string, number> {
+    const counts = { memory_candidates: 0, memories: 0 };
+    const scoped = (scope: { type: string; id: string | null }): boolean =>
+      projectId === null ||
+      (scope.type === 'project' && scope.id === projectId) ||
+      (scope.type === 'work_thread' && scope.id === projectId);
+    for (const [key, entry] of [...this.candidates]) {
+      if (entry.tenantId !== tenantId) continue;
+      if (!scoped(entry.candidate.scope)) continue;
+      this.candidates.delete(key);
+      counts.memory_candidates += 1;
+    }
+    for (const [key, entry] of [...this.memories]) {
+      if (entry.tenantId !== tenantId) continue;
+      if (!scoped(entry.memory.scope)) continue;
+      this.memories.delete(key);
+      counts.memories += 1;
+    }
+    return counts;
+  }
+
   private liveMemories(
     context: IngestionRequestContext,
     filter?: MemoryScopeFilter,

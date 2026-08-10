@@ -32,6 +32,7 @@ const app = await buildApi({
   dashboardUrl: config.dashboardUrl,
   cookieSecret: config.cookieSecret,
   secureCookies: config.environment === 'production',
+  devLogin: config.devLogin,
 });
 
 const shutdown = async (signal: string) => {

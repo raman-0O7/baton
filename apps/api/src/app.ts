@@ -96,6 +96,8 @@ export interface ApiApplicationOptions {
   cookieSecret: string;
   secureCookies?: boolean;
   logger?: boolean;
+  /** Local-only browser login bypass (no OIDC). Must be false in production. */
+  devLogin?: boolean;
 }
 
 export async function buildApi(
@@ -248,6 +250,37 @@ export async function buildApi(
     );
     return reply.redirect(state.returnTo);
   });
+
+  if (options.devLogin === true) {
+    // Local-only login bypass. Establishes a browser session for a stable
+    // developer identity without OIDC. Guarded by config so it can never be
+    // registered when NODE_ENV=production.
+    app.get('/v1/auth/dev/login', async (request, reply) => {
+      const query = parseObject(request.query);
+      const candidate =
+        typeof query.email === 'string' ? query.email.trim() : '';
+      // Accounts require a well-formed email; fall back to a valid local one.
+      const email = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(candidate)
+        ? candidate
+        : 'dev@baton.local';
+      const returnTo = normalizeReturnTo(query.returnTo, options.dashboardUrl);
+      const session = await options.identity.establishBrowserSession(
+        {
+          issuer: 'baton-dev-login',
+          subject: email,
+          email,
+          displayName: email.split('@')[0] ?? 'Developer',
+        },
+        { requestId: request.id },
+      );
+      reply.setCookie(
+        sessionCookie,
+        session.sessionToken,
+        cookieOptions(secure, secondsUntil(session.expiresAt)),
+      );
+      return reply.redirect(returnTo);
+    });
+  }
 
   app.post('/oauth/device/authorize', async (request, reply) => {
     const input = parseSchema(DeviceAuthorizationRequestSchema, request.body);

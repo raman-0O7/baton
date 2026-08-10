@@ -23,9 +23,20 @@ const ApiEnvironmentSchema = z
     OIDC_USERINFO_ENDPOINT: z.url().optional(),
     OIDC_CLIENT_ID: z.string().min(1).optional(),
     OIDC_CLIENT_SECRET: z.string().min(1).optional(),
+    BATON_DEV_LOGIN: z.enum(['true', 'false']).default('false'),
   })
   .passthrough()
   .superRefine((environment, context) => {
+    if (
+      environment.BATON_DEV_LOGIN === 'true' &&
+      environment.NODE_ENV === 'production'
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['BATON_DEV_LOGIN'],
+        message: 'the dev login route must never be enabled in production',
+      });
+    }
     const oidcKeys = [
       'OIDC_ISSUER',
       'OIDC_AUTHORIZATION_ENDPOINT',
@@ -89,6 +100,8 @@ export interface ApiConfig {
     clientId: string;
     clientSecret?: string;
   } | null;
+  /** Local-only browser login bypass; never true in production. */
+  devLogin: boolean;
 }
 
 export function loadApiConfig(environment: NodeJS.ProcessEnv): ApiConfig {
@@ -118,6 +131,8 @@ export function loadApiConfig(environment: NodeJS.ProcessEnv): ApiConfig {
     publicApiUrl: stripTrailingSlash(value.BATON_PUBLIC_API_URL),
     dashboardUrl: stripTrailingSlash(value.BATON_DASHBOARD_URL),
     oidc,
+    devLogin:
+      value.BATON_DEV_LOGIN === 'true' && value.NODE_ENV !== 'production',
   };
 }
 

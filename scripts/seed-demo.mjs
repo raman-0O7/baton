@@ -46,7 +46,8 @@ const login = await fetch(
   { redirect: 'manual' },
 );
 const setCookie = login.headers.get('set-cookie');
-if (!setCookie) throw new Error('dev login returned no cookie — is BATON_DEV_LOGIN=true?');
+if (!setCookie)
+  throw new Error('dev login returned no cookie — is BATON_DEV_LOGIN=true?');
 const cookie = setCookie.split(';')[0];
 const cookieHeaders = { cookie, 'content-type': 'application/json' };
 
@@ -97,7 +98,10 @@ const project = await json(
   await fetch(`${API}/v1/projects`, {
     method: 'POST',
     headers: bearer,
-    body: JSON.stringify({ displayName: 'Greeting demo', collectionPolicy: policy }),
+    body: JSON.stringify({
+      displayName: 'Greeting demo',
+      collectionPolicy: policy,
+    }),
   }),
   'create project',
 );
@@ -122,13 +126,39 @@ const consent = await json(
 const sessionId = randomUUID();
 const base = Date.now() - 60 * 60 * 1000;
 const payloads = [
-  { kind: 'session_metadata', title: 'Add greeting helper', gitBranch: 'feat/greeting' },
-  { kind: 'message', role: 'user', text: 'Create greet.go with a Greet function, then rename it to Hello.' },
-  { kind: 'file_change', path: 'greet.go', operation: 'create', summary: 'new file' },
-  { kind: 'file_change', path: 'greet.go', operation: 'edit', summary: 'renamed Greet to Hello' },
-  { kind: 'decision', summary: 'Rename Greet to Hello for a clearer API', rationale: 'Reads better at call sites' },
+  {
+    kind: 'session_metadata',
+    title: 'Add greeting helper',
+    gitBranch: 'feat/greeting',
+  },
+  {
+    kind: 'message',
+    role: 'user',
+    text: 'Create greet.go with a Greet function, then rename it to Hello.',
+  },
+  {
+    kind: 'file_change',
+    path: 'greet.go',
+    operation: 'create',
+    summary: 'new file',
+  },
+  {
+    kind: 'file_change',
+    path: 'greet.go',
+    operation: 'edit',
+    summary: 'renamed Greet to Hello',
+  },
+  {
+    kind: 'decision',
+    summary: 'Rename Greet to Hello for a clearer API',
+    rationale: 'Reads better at call sites',
+  },
   { kind: 'task', text: 'Add unit tests for Hello', status: 'pending' },
-  { kind: 'message', role: 'assistant', text: 'Done: greet.go created and the function renamed to Hello. Unit tests remain as a follow-up.' },
+  {
+    kind: 'message',
+    role: 'assistant',
+    text: 'Done: greet.go created and the function renamed to Hello. Unit tests remain as a follow-up.',
+  },
 ];
 const events = payloads.map((payload, index) =>
   createSourceEvent({
@@ -204,8 +234,18 @@ await fetch(`${API}/v1/memory/candidates`, {
     claim: 'Prefers concise answers by default.',
     scope: { type: 'global', id: null },
     evidence: [
-      { eventId: randomUUID(), projectId: 'project-a', workThreadId: null, text: 'Keep your answers concise.' },
-      { eventId: randomUUID(), projectId: 'project-b', workThreadId: null, text: 'Please keep this concise too.' },
+      {
+        eventId: randomUUID(),
+        projectId: 'project-a',
+        workThreadId: null,
+        text: 'Keep your answers concise.',
+      },
+      {
+        eventId: randomUUID(),
+        projectId: 'project-b',
+        workThreadId: null,
+        text: 'Please keep this concise too.',
+      },
     ],
   }),
 });
@@ -217,6 +257,8 @@ console.log('  memory      : one candidate awaiting approval');
 console.log('');
 console.log('Open the dashboard:');
 console.log(`  1. ${API}/v1/auth/dev/login?email=${encodeURIComponent(email)}`);
-console.log('  2. http://localhost:3000/work    → your thread + timeline + search');
+console.log(
+  '  2. http://localhost:3000/work    → your thread + timeline + search',
+);
 console.log('  3. http://localhost:3000/memory  → approve the candidate');
 console.log('  4. http://localhost:3000/privacy → export or delete');

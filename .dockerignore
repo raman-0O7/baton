@@ -1,0 +1,23 @@
+# Keep the Docker build context small and reproducible. Everything the image
+# needs (source, package.json files, lockfile, tsconfigs, pnpm-workspace.yaml)
+# is copied fresh; installed deps and build outputs are regenerated in-image.
+node_modules
+**/node_modules
+dist
+**/dist
+.turbo
+**/.turbo
+coverage
+**/coverage
+
+.git
+.gitignore
+.env
+.env.*
+*.log
+
+# Local-only and non-TS assets that never belong in the API/worker image.
+deploy/compose.yml
+testdata
+**/*.md
+!apps/*/README.md

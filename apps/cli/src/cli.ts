@@ -32,6 +32,12 @@ import {
   createNativeSyncRuntime,
   type NativeSourceOptions,
 } from './sync-runtime.js';
+import {
+  installService,
+  serviceStatus,
+  uninstallService,
+  type ServiceHost,
+} from './service.js';
 
 export interface CliIo {
   out(message: string): void;
@@ -50,6 +56,7 @@ export interface CliDependencies {
   waitForShutdown?: () => Promise<void>;
   syncRuntime?: CliSyncRuntime;
   nativeSourceOptions?: NativeSourceOptions;
+  serviceHost?: ServiceHost;
 }
 
 export interface CliSyncRuntime {
@@ -94,6 +101,9 @@ export async function runCli(
         return 0;
       case 'daemon':
         await daemon(dependencies);
+        return 0;
+      case 'service':
+        await service(dependencies, args[1]);
         return 0;
       case 'continue':
         await continueThread(dependencies, args);
@@ -457,6 +467,34 @@ async function daemon(dependencies: CliDependencies): Promise<void> {
   await (dependencies.waitForShutdown?.() ?? waitForShutdown());
   await coordinator.stop();
   dependencies.io.out('Baton capture stopped.');
+}
+
+async function service(
+  dependencies: CliDependencies,
+  action: string | undefined,
+): Promise<void> {
+  const host = dependencies.serviceHost;
+  if (host === undefined) {
+    throw new Error('Service management is unavailable in this environment.');
+  }
+  switch (action) {
+    case 'install':
+      if ((await dependencies.store.load()) === null) {
+        dependencies.io.out(
+          'Note: not signed in yet — run `baton login` so the daemon can sync.',
+        );
+      }
+      await installService(host, dependencies.io);
+      return;
+    case 'uninstall':
+      await uninstallService(host, dependencies.io);
+      return;
+    case 'status':
+      await serviceStatus(host, dependencies.io);
+      return;
+    default:
+      throw new Error('Usage: baton service <install|uninstall|status>');
+  }
 }
 
 async function continueThread(
@@ -930,6 +968,9 @@ function printHelp(io: CliIo): void {
   io.out('  baton resume [PATH]');
   io.out('  baton disable [PATH]');
   io.out('  baton daemon');
+  io.out(
+    '  baton service <install|uninstall|status>  (run daemon in background)',
+  );
   io.out('  baton continue [PATH] [--thread ID]');
   io.out('  baton mcp                 (read-only MCP server over stdio)');
   io.out('  baton mcp install [AGENT] (print MCP configuration)');

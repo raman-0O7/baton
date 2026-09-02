@@ -33,6 +33,37 @@ describe('runtime configuration', () => {
     ).toThrow();
   });
 
+  it('accepts a production deployment with only a social provider', () => {
+    const config = loadApiConfig({
+      NODE_ENV: 'production',
+      DATABASE_URL: 'postgres://baton:baton@database/baton',
+      BATON_TOKEN_PEPPER: secret,
+      BATON_COOKIE_SECRET: secret,
+      BATON_PUBLIC_API_URL: 'https://api.example.com',
+      BATON_DASHBOARD_URL: 'https://app.example.com',
+      GOOGLE_CLIENT_ID: 'google-client',
+      GOOGLE_CLIENT_SECRET: 'google-secret',
+    });
+    expect(config.oidc).toBeNull();
+    expect(config.google).toEqual({
+      clientId: 'google-client',
+      clientSecret: 'google-secret',
+    });
+    expect(config.github).toBeNull();
+  });
+
+  it('rejects a partially configured social provider', () => {
+    expect(() =>
+      loadApiConfig({
+        NODE_ENV: 'test',
+        DATABASE_URL: 'postgres://baton:baton@localhost/baton',
+        BATON_TOKEN_PEPPER: secret,
+        BATON_COOKIE_SECRET: secret,
+        GITHUB_CLIENT_ID: 'github-client',
+      }),
+    ).toThrow();
+  });
+
   it('normalizes CLI and worker settings', () => {
     expect(
       loadCliConfig({ BATON_API_URL: 'https://api.example.com/' }).apiUrl,

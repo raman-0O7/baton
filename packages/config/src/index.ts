@@ -23,6 +23,10 @@ const ApiEnvironmentSchema = z
     OIDC_USERINFO_ENDPOINT: z.url().optional(),
     OIDC_CLIENT_ID: z.string().min(1).optional(),
     OIDC_CLIENT_SECRET: z.string().min(1).optional(),
+    GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+    GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+    GITHUB_CLIENT_ID: z.string().min(1).optional(),
+    GITHUB_CLIENT_SECRET: z.string().min(1).optional(),
     BATON_DEV_LOGIN: z.enum(['true', 'false']).default('false'),
   })
   .passthrough()
@@ -45,7 +49,8 @@ const ApiEnvironmentSchema = z
       'OIDC_CLIENT_ID',
     ] as const;
     const configured = oidcKeys.filter((key) => environment[key] !== undefined);
-    if (configured.length !== 0 && configured.length !== oidcKeys.length) {
+    const oidcFullyConfigured = configured.length === oidcKeys.length;
+    if (configured.length !== 0 && !oidcFullyConfigured) {
       context.addIssue({
         code: 'custom',
         path: ['OIDC_ISSUER'],
@@ -53,15 +58,39 @@ const ApiEnvironmentSchema = z
           'OIDC configuration must include issuer, endpoints, and client ID',
       });
     }
+
+    // Each social provider needs both halves of its client credential.
+    const socialProviders = [
+      { id: 'GOOGLE', keys: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'] },
+      { id: 'GITHUB', keys: ['GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET'] },
+    ] as const;
+    const socialConfigured: Record<string, boolean> = {};
+    for (const provider of socialProviders) {
+      const present = provider.keys.filter(
+        (key) => environment[key] !== undefined,
+      );
+      socialConfigured[provider.id] = present.length === provider.keys.length;
+      if (present.length !== 0 && present.length !== provider.keys.length) {
+        context.addIssue({
+          code: 'custom',
+          path: [provider.keys[0]],
+          message: `${provider.id} login requires both a client ID and secret`,
+        });
+      }
+    }
+
     if (environment.NODE_ENV === 'production') {
-      for (const key of oidcKeys) {
-        if (environment[key] === undefined) {
-          context.addIssue({
-            code: 'custom',
-            path: [key],
-            message: 'is required in production',
-          });
-        }
+      const anyProvider =
+        oidcFullyConfigured ||
+        socialConfigured.GOOGLE === true ||
+        socialConfigured.GITHUB === true;
+      if (!anyProvider) {
+        context.addIssue({
+          code: 'custom',
+          path: ['OIDC_ISSUER'],
+          message:
+            'at least one login provider (OIDC, Google, or GitHub) must be configured in production',
+        });
       }
       for (const key of [
         'BATON_PUBLIC_API_URL',
@@ -100,6 +129,10 @@ export interface ApiConfig {
     clientId: string;
     clientSecret?: string;
   } | null;
+  /** Google OAuth2/OIDC login (endpoints are fixed; only credentials vary). */
+  google: { clientId: string; clientSecret: string } | null;
+  /** GitHub OAuth2 login (endpoints are fixed; only credentials vary). */
+  github: { clientId: string; clientSecret: string } | null;
   /** Local-only browser login bypass; never true in production. */
   devLogin: boolean;
 }
@@ -131,6 +164,22 @@ export function loadApiConfig(environment: NodeJS.ProcessEnv): ApiConfig {
     publicApiUrl: stripTrailingSlash(value.BATON_PUBLIC_API_URL),
     dashboardUrl: stripTrailingSlash(value.BATON_DASHBOARD_URL),
     oidc,
+    google:
+      value.GOOGLE_CLIENT_ID === undefined ||
+      value.GOOGLE_CLIENT_SECRET === undefined
+        ? null
+        : {
+            clientId: value.GOOGLE_CLIENT_ID,
+            clientSecret: value.GOOGLE_CLIENT_SECRET,
+          },
+    github:
+      value.GITHUB_CLIENT_ID === undefined ||
+      value.GITHUB_CLIENT_SECRET === undefined
+        ? null
+        : {
+            clientId: value.GITHUB_CLIENT_ID,
+            clientSecret: value.GITHUB_CLIENT_SECRET,
+          },
     devLogin:
       value.BATON_DEV_LOGIN === 'true' && value.NODE_ENV !== 'production',
   };

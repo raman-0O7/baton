@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
 import { Frame } from './frame';
+import { SignInButtons } from './sign-in';
 
 const apiUrl = (
   process.env.NEXT_PUBLIC_BATON_API_URL ?? 'http://localhost:4000'
@@ -47,7 +48,6 @@ export function Activation() {
   }
 
   const returnTo = `/activate${code.length === 0 ? '' : `?user_code=${encodeURIComponent(code)}`}`;
-  const loginUrl = `${apiUrl}/v1/auth/web/login?returnTo=${encodeURIComponent(returnTo)}`;
 
   return (
     <Frame folio="DEVICE PASSAGE">
@@ -94,7 +94,11 @@ export function Activation() {
               </button>
               {status === 'signed-out' ? (
                 <p className="form-message">
-                  Sign in first. <a href={loginUrl}>Continue to login →</a>
+                  Sign in first.{' '}
+                  <SignInButtons
+                    returnTo={returnTo}
+                    fallbackLabel="Continue to login"
+                  />
                 </p>
               ) : null}
               {status === 'error' ? (

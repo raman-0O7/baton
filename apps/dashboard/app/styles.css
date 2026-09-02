@@ -838,3 +838,9 @@ h1 em {
   padding: 0.35rem 0.8rem;
   box-shadow: 3px 3px 0 var(--ink);
 }
+.sign-in-buttons {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}

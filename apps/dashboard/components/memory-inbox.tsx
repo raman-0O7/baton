@@ -4,7 +4,8 @@ import type { Memory, MemoryCandidate } from '@baton/protocol';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
-import { cloudFetch, loginHref } from './cloud';
+import { cloudFetch } from './cloud';
+import { SignInButtons } from './sign-in';
 import { Frame, LoadingLedger } from './frame';
 
 type ViewState =
@@ -89,9 +90,7 @@ export function MemoryInbox() {
             Review your <em>memory</em>.
           </h1>
           <p>
-            <a className="orange-button" href={loginHref('/memory')}>
-              Sign in to Baton
-            </a>
+            <SignInButtons returnTo="/memory" />
           </p>
         </section>
       </Frame>

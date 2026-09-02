@@ -1,4 +1,10 @@
-import { IdentityService, OidcWebIdentityProvider } from '@baton/auth';
+import {
+  createGoogleProvider,
+  GithubOAuthProvider,
+  IdentityService,
+  OidcWebIdentityProvider,
+  type WebIdentityProvider,
+} from '@baton/auth';
 import { loadApiConfig } from '@baton/config';
 import {
   createDatabaseClient,
@@ -20,6 +26,16 @@ const identity = new IdentityService(new PostgresIdentityStore(database.db), {
 });
 const provider =
   config.oidc === null ? null : new OidcWebIdentityProvider(config.oidc);
+const identityProviders: Record<string, WebIdentityProvider> = {};
+if (config.google !== null) {
+  identityProviders.google = createGoogleProvider(
+    config.google.clientId,
+    config.google.clientSecret,
+  );
+}
+if (config.github !== null) {
+  identityProviders.github = new GithubOAuthProvider(config.github);
+}
 const app = await buildApi({
   identity,
   ingestionStore: new PostgresIngestionStore(database.db),
@@ -28,6 +44,7 @@ const app = await buildApi({
   memoryStore: new PostgresMemoryStore(database.db),
   lifecycleStore: new PostgresLifecycleStore(database.db),
   identityProvider: provider,
+  identityProviders,
   publicApiUrl: config.publicApiUrl,
   dashboardUrl: config.dashboardUrl,
   cookieSecret: config.cookieSecret,

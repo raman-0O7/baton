@@ -89,26 +89,22 @@ docker run --rm -p 4000:4000 --env-file deploy/api.env baton-api
 
 ### API environment variables
 
-| Variable                      | Example / value                            | Required               |
-| ----------------------------- | ------------------------------------------ | ---------------------- |
-| `NODE_ENV`                    | `production`                               | yes                    |
-| `DATABASE_URL`                | `postgres://…neon…/baton?sslmode=require`  | yes                    |
-| `BATON_TOKEN_PEPPER`          | random ≥32 chars — **rotate, keep secret** | yes                    |
-| `BATON_COOKIE_SECRET`         | random ≥32 chars — **rotate, keep secret** | yes                    |
-| `BATON_PUBLIC_API_URL`        | `https://api.example.com`                  | yes (HTTPS)            |
-| `BATON_DASHBOARD_URL`         | `https://app.example.com`                  | yes (HTTPS)            |
-| `PORT`                        | platform-provided (default 4000)           | usually auto           |
-| `OIDC_ISSUER`                 | `https://your-tenant.auth0.com/`           | yes                    |
-| `OIDC_AUTHORIZATION_ENDPOINT` | from the provider                          | yes                    |
-| `OIDC_TOKEN_ENDPOINT`         | from the provider                          | yes                    |
-| `OIDC_USERINFO_ENDPOINT`      | from the provider                          | yes                    |
-| `OIDC_CLIENT_ID`              | from the provider                          | yes                    |
-| `OIDC_CLIENT_SECRET`          | from the provider                          | if confidential client |
-| `BATON_DEV_LOGIN`             | **unset / never `true`**                   | —                      |
+| Variable               | Example / value                            | Required     |
+| ---------------------- | ------------------------------------------ | ------------ |
+| `NODE_ENV`             | `production`                               | yes          |
+| `DATABASE_URL`         | `postgres://…neon…/baton?sslmode=require`  | yes          |
+| `BATON_TOKEN_PEPPER`   | random ≥32 chars — **rotate, keep secret** | yes          |
+| `BATON_COOKIE_SECRET`  | random ≥32 chars — **rotate, keep secret** | yes          |
+| `BATON_PUBLIC_API_URL` | `https://api.example.com`                  | yes (HTTPS)  |
+| `BATON_DASHBOARD_URL`  | `https://app.example.com`                  | yes (HTTPS)  |
+| `PORT`                 | platform-provided (default 4000)           | usually auto |
+| _one login provider_   | Google and/or GitHub and/or OIDC — see §4  | yes (≥1)     |
+| `BATON_DEV_LOGIN`      | **unset / never `true`**                   | —            |
 
-In production the config loader **requires** the OIDC set, requires the URLs to
-be HTTPS, and forces `devLogin` off regardless of `BATON_DEV_LOGIN`. Generate a
-secret with `openssl rand -hex 24`.
+In production the config loader **requires at least one login provider**
+(Google, GitHub, or a full generic OIDC set — §4), requires the public/dashboard
+URLs to be HTTPS, and forces `devLogin` off regardless of `BATON_DEV_LOGIN`.
+Generate a secret with `openssl rand -hex 24`.
 
 ---
 
@@ -129,17 +125,51 @@ secret with `openssl rand -hex 24`.
 
 ---
 
-## 4. OIDC provider
+## 4. Login providers
 
-Pick any OIDC provider (Auth0, Clerk, WorkOS, Cognito, Okta, …). Create an
-application and set:
+Baton builds its own sessions, CLI device flow, and tokens — it does not store
+passwords. The human "who are you" step is delegated to a provider. Configure
+one or more; the dashboard reads `GET /v1/auth/providers` and renders one button
+per configured provider automatically.
 
-- **Redirect / callback URL:** `https://api.example.com/v1/auth/web/callback`
-- **Grant:** Authorization Code + PKCE (the API sends PKCE).
-- Copy issuer + the three endpoints + client id/secret into the API env (§2).
+Login flow: dashboard → `GET /v1/auth/web/login/<provider>` → provider → back to
+`/v1/auth/web/callback/<provider>` → session cookie → dashboard.
 
-Login flow: dashboard → `GET https://api.example.com/v1/auth/web/login` →
-provider → back to `/v1/auth/web/callback` → session cookie → dashboard.
+### Google (built in — just credentials)
+
+Endpoints are hardcoded; you supply only the client credentials.
+
+1. Google Cloud Console → APIs & Services → Credentials → **OAuth client ID**
+   (type: Web application).
+2. **Authorized redirect URI:**
+   `https://api.example.com/v1/auth/web/callback/google`
+3. Set on the API:
+
+   | Variable               | Value                         |
+   | ---------------------- | ----------------------------- |
+   | `GOOGLE_CLIENT_ID`     | `…apps.googleusercontent.com` |
+   | `GOOGLE_CLIENT_SECRET` | from the console              |
+
+### GitHub (built in — just credentials)
+
+GitHub is OAuth2 (not OIDC); Baton reads the profile from the GitHub API and
+requires a **verified** primary email.
+
+1. GitHub → Settings → Developer settings → **OAuth Apps** → New OAuth App.
+2. **Authorization callback URL:**
+   `https://api.example.com/v1/auth/web/callback/github`
+3. Set on the API:
+
+   | Variable               | Value              |
+   | ---------------------- | ------------------ |
+   | `GITHUB_CLIENT_ID`     | from the OAuth App |
+   | `GITHUB_CLIENT_SECRET` | from the OAuth App |
+
+### Generic OIDC (optional — any other provider)
+
+For Auth0/Clerk/WorkOS/Cognito/Okta/etc., set the full `OIDC_*` set (issuer, the
+three endpoints, client id, and secret if confidential). Callback URL:
+`https://api.example.com/v1/auth/web/callback`. Authorization Code + PKCE.
 
 ---
 

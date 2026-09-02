@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Frame, LoadingLedger } from './frame';
+import { SignInButtons } from './sign-in';
 
 type ViewState =
   | { kind: 'loading' }
@@ -219,7 +220,6 @@ export function Dashboard() {
 }
 
 function SignedOut() {
-  const loginUrl = `${apiUrl}/v1/auth/web/login?returnTo=${encodeURIComponent('/')}`;
   return (
     <Frame folio="WELCOME">
       <section className="welcome reveal">
@@ -233,9 +233,7 @@ function SignedOut() {
           Baton keeps your working context available across devices and agents,
           while you decide what gets connected.
         </p>
-        <a className="orange-button" href={loginUrl}>
-          Enter your workspace <span>→</span>
-        </a>
+        <SignInButtons returnTo="/" fallbackLabel="Enter your workspace" />
         <div className="welcome-proof">
           <span>01 / SIGN IN</span>
           <span>02 / CONNECT CLI</span>

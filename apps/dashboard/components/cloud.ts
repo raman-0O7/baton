@@ -13,8 +13,33 @@ export function cloudFetch(
   });
 }
 
-export function loginHref(returnTo: string): string {
-  return `${apiUrl}/v1/auth/web/login?returnTo=${encodeURIComponent(returnTo)}`;
+export function loginHref(returnTo: string, provider?: string): string {
+  const path =
+    provider === undefined
+      ? '/v1/auth/web/login'
+      : `/v1/auth/web/login/${provider}`;
+  return `${apiUrl}${path}?returnTo=${encodeURIComponent(returnTo)}`;
+}
+
+/** Named social login providers the API has configured (e.g. google, github). */
+export async function fetchProviders(): Promise<string[]> {
+  try {
+    const response = await cloudFetch('/v1/auth/providers');
+    if (!response.ok) return [];
+    const body: unknown = await response.json();
+    if (
+      typeof body === 'object' &&
+      body !== null &&
+      Array.isArray((body as { providers?: unknown }).providers)
+    ) {
+      return (body as { providers: unknown[] }).providers.filter(
+        (value): value is string => typeof value === 'string',
+      );
+    }
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 export function relativeTime(iso: string): string {

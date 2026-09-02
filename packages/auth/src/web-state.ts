@@ -4,6 +4,8 @@ export interface WebLoginState {
   state: string;
   codeVerifier: string;
   returnTo: string;
+  /** Which identity provider issued this login (e.g. 'google', 'github'). */
+  provider: string;
   expiresAt: number;
 }
 
@@ -42,6 +44,7 @@ export function decodeWebLoginState(
       typeof value.state !== 'string' ||
       typeof value.codeVerifier !== 'string' ||
       typeof value.returnTo !== 'string' ||
+      typeof value.provider !== 'string' ||
       typeof value.expiresAt !== 'number' ||
       value.expiresAt <= now
     ) {

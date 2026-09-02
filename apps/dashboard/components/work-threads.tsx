@@ -4,7 +4,8 @@ import type { Project, WorkThread } from '@baton/protocol';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
-import { cloudFetch, loginHref, relativeTime } from './cloud';
+import { cloudFetch, relativeTime } from './cloud';
+import { SignInButtons } from './sign-in';
 import { Frame, LoadingLedger } from './frame';
 
 type ViewState =
@@ -90,9 +91,7 @@ export function WorkThreads() {
             Your <em>work</em> is waiting.
           </h1>
           <p>
-            <a className="orange-button" href={loginHref('/work')}>
-              Sign in to Baton
-            </a>
+            <SignInButtons returnTo="/work" />
           </p>
         </section>
       </Frame>

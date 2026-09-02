@@ -4,7 +4,8 @@ import type { Account } from '@baton/protocol';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
-import { cloudFetch, loginHref } from './cloud';
+import { cloudFetch } from './cloud';
+import { SignInButtons } from './sign-in';
 import { Frame, LoadingLedger } from './frame';
 
 type ViewState =
@@ -87,9 +88,7 @@ export function Privacy() {
             Your <em>data</em>, your call.
           </h1>
           <p>
-            <a className="orange-button" href={loginHref('/privacy')}>
-              Sign in to Baton
-            </a>
+            <SignInButtons returnTo="/privacy" />
           </p>
         </section>
       </Frame>

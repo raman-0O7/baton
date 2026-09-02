@@ -86,6 +86,11 @@ import { gunzipSync } from 'node:zlib';
 export interface ApiApplicationOptions {
   identity: IdentityService;
   identityProvider: WebIdentityProvider | null;
+  /**
+   * Named social login providers (e.g. 'google', 'github'), each exposed at
+   * `/v1/auth/web/login/<name>` + `/v1/auth/web/callback/<name>`.
+   */
+  identityProviders?: Record<string, WebIdentityProvider>;
   ingestionStore?: IngestionStore;
   workThreadStore?: WorkThreadStore;
   retrievalStore?: RetrievalStore;
@@ -196,6 +201,7 @@ export async function buildApi(
         state: material.state,
         codeVerifier: material.verifier,
         returnTo,
+        provider: 'oidc',
         expiresAt: Date.now() + 10 * 60 * 1000,
       },
       options.cookieSecret,
@@ -250,6 +256,79 @@ export async function buildApi(
     );
     return reply.redirect(state.returnTo);
   });
+
+  // Named social providers (google, github, …). Each gets its own login and
+  // callback path so the OAuth redirect URI is explicit per provider.
+  const namedProviders = options.identityProviders ?? {};
+
+  app.get('/v1/auth/providers', async () => ({
+    providers: Object.keys(namedProviders),
+  }));
+
+  for (const [name, provider] of Object.entries(namedProviders)) {
+    const callbackPath = `/v1/auth/web/callback/${name}`;
+
+    app.get(`/v1/auth/web/login/${name}`, async (request, reply) => {
+      const query = parseObject(request.query);
+      const returnTo = normalizeReturnTo(query.returnTo, options.dashboardUrl);
+      const material = createPkceMaterial();
+      const encoded = encodeWebLoginState(
+        {
+          state: material.state,
+          codeVerifier: material.verifier,
+          returnTo,
+          provider: name,
+          expiresAt: Date.now() + 10 * 60 * 1000,
+        },
+        options.cookieSecret,
+      );
+      reply.setCookie(stateCookie, encoded, cookieOptions(secure, 10 * 60));
+      return reply.redirect(
+        provider
+          .authorizationUrl({
+            state: material.state,
+            codeVerifier: material.verifier,
+            redirectUri: `${options.publicApiUrl}${callbackPath}`,
+          })
+          .toString(),
+      );
+    });
+
+    app.get(callbackPath, async (request, reply) => {
+      const query = parseObject(request.query);
+      if (typeof query.code !== 'string' || typeof query.state !== 'string') {
+        throw invalidRequest(
+          'The authorization callback is missing code or state.',
+        );
+      }
+      const state = decodeWebLoginState(
+        request.cookies[stateCookie] ?? '',
+        options.cookieSecret,
+      );
+      if (
+        state === null ||
+        state.state !== query.state ||
+        state.provider !== name
+      ) {
+        throw invalidRequest('The web login state is invalid or expired.');
+      }
+      const identity = await provider.exchange({
+        code: query.code,
+        codeVerifier: state.codeVerifier,
+        redirectUri: `${options.publicApiUrl}${callbackPath}`,
+      });
+      const session = await options.identity.establishBrowserSession(identity, {
+        requestId: request.id,
+      });
+      reply.clearCookie(stateCookie, cookieOptions(secure));
+      reply.setCookie(
+        sessionCookie,
+        session.sessionToken,
+        cookieOptions(secure, secondsUntil(session.expiresAt)),
+      );
+      return reply.redirect(state.returnTo);
+    });
+  }
 
   if (options.devLogin === true) {
     // Local-only login bypass. Establishes a browser session for a stable

@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./dist/app.js",
-    "./server": "./dist/server.js"
+    ".": "./dist/app.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

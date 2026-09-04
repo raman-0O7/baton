@@ -1,6 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-import { createConfiguredApi } from '@baton/api/server';
+// Import the built factory by relative path (not the `@baton/api/server`
+// self-reference): pnpm creates no self-symlink for a package, so Vercel's
+// function bundler cannot resolve the self-reference, whereas `../dist/server.js`
+// is a real file produced by the `pnpm --filter @baton/api... build` step.
+import { createConfiguredApi } from '../dist/server.js';
 
 /**
  * Vercel serverless entrypoint for the Baton API.

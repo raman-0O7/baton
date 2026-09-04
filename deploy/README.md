@@ -1,8 +1,14 @@
 # Deploying hosted Baton
 
 This is the runbook for taking Baton from "runs on my laptop" to a hosted
-service, using **Neon** (Postgres), **Vercel** (dashboard), and a container host
-such as **Railway / Render / Fly.io** for the API.
+service on a **$0 footprint**: **Neon** (Postgres free tier), and **Vercel**
+(free tier) for both the dashboard and the API.
+
+The API is stateless — every request reads/writes Postgres, with no in-memory
+session store, background timers, or sockets — so it runs as a **single Vercel
+serverless function** instead of an always-on paid container. No Railway/Render
+bill. (The `apps/api/Dockerfile` is still there if you ever want to run it as a
+long-running container instead; see the note at the end of §2.)
 
 ## Topology
 
@@ -10,10 +16,10 @@ such as **Railway / Render / Fly.io** for the API.
    developer laptop                          cloud
   ┌────────────────┐        HTTPS       ┌───────────────────────────┐
   │ baton CLI      │ ─────ingest──────► │ API  (apps/api)           │
-  │  + daemon      │                    │  Railway / Render / Fly   │
+  │  + daemon      │                    │  Vercel serverless fn     │
   └────────────────┘                    │  api.example.com          │
                                         └─────────────┬─────────────┘
-   browser                                            │ SQL (TLS)
+   browser                                            │ SQL (TLS, pooled)
   ┌────────────────┐        HTTPS                     ▼
   │ dashboard      │ ─────────────────► ┌───────────────────────────┐
   │  app.example   │ ◄──cookie/session  │ Postgres (Neon)           │
@@ -22,20 +28,20 @@ such as **Railway / Render / Fly.io** for the API.
           │ browser login redirect
           ▼
   ┌────────────────┐
-  │ OIDC provider  │  (Auth0 / Clerk / WorkOS / Cognito / …)
+  │ login provider │  (Google / GitHub / any OIDC)
   └────────────────┘
 ```
 
 **What you host:**
 
-| Piece               | Where                   | Notes                                   |
-| ------------------- | ----------------------- | --------------------------------------- |
-| Postgres            | Neon                    | Managed. Run migrations against it.     |
-| Dashboard (Next.js) | Vercel                  | `apps/dashboard`.                       |
-| **API (Fastify)**   | Railway / Render / Fly  | `apps/api`. Always-on. Dockerized.      |
-| Worker              | same host, **later**    | `apps/worker` — Phase-1 stub for now.   |
-| **OIDC provider**   | external SaaS           | Prod turns dev-login OFF; you need one. |
-| CLI                 | each developer's laptop | Points `BATON_API_URL` at the API.      |
+| Piece               | Where                   | Notes                                  |
+| ------------------- | ----------------------- | -------------------------------------- |
+| Postgres            | Neon (free)             | Managed. Run migrations against it.    |
+| Dashboard (Next.js) | Vercel (free)           | `apps/dashboard`.                      |
+| **API (Fastify)**   | Vercel (free)           | `apps/api`. Serverless function. $0.   |
+| Worker              | **later**               | `apps/worker` — Phase-1 stub for now.  |
+| **Login provider**  | Google / GitHub / OIDC  | Prod turns dev-login OFF; you need ≥1. |
+| CLI                 | each developer's laptop | Points `BATON_API_URL` at the API.     |
 
 ---
 
@@ -69,42 +75,49 @@ that data is missing. (See the `baton-postgres-rls-gate` note.)
 
 ---
 
-## 2. API on Railway / Render / Fly
+## 2. API on Vercel (serverless, free)
 
-The API is a long-running Fastify server (device-flow polling + session
-cookies), so it needs an always-on container — not Vercel serverless.
+The whole Fastify app runs as one serverless function. `apps/api/vercel.json`
+rewrites every path to `apps/api/api/index.ts`, which builds the wired app once
+per warm instance and serves each request through Fastify. The build compiles
+the workspace with `pnpm --filter @baton/api... build`.
 
-- **Dockerfile:** `apps/api/Dockerfile`
-- **Build context / root directory:** the **repository root** (the image needs
-  the whole pnpm workspace).
-- **Health check:** `GET /health/live` → `{"status":"ok"}`
+Create a **second Vercel project** (separate from the dashboard), same repo:
+
+- **Root Directory:** `apps/api`
+- **Framework Preset:** Other (the bundled `vercel.json` sets install/build).
+- **Node.js version:** 22.x (Project → Settings → Node.js Version).
 - **Custom domain:** `api.example.com` (see §5 — this matters for cookies).
-
-Local build to sanity-check before wiring a host:
-
-```bash
-docker build -f apps/api/Dockerfile -t baton-api .
-docker run --rm -p 4000:4000 --env-file deploy/api.env baton-api
-```
+- **Health check:** `GET /health/live` → `{"status":"ok"}`.
 
 ### API environment variables
 
-| Variable               | Example / value                            | Required     |
-| ---------------------- | ------------------------------------------ | ------------ |
-| `NODE_ENV`             | `production`                               | yes          |
-| `DATABASE_URL`         | `postgres://…neon…/baton?sslmode=require`  | yes          |
-| `BATON_TOKEN_PEPPER`   | random ≥32 chars — **rotate, keep secret** | yes          |
-| `BATON_COOKIE_SECRET`  | random ≥32 chars — **rotate, keep secret** | yes          |
-| `BATON_PUBLIC_API_URL` | `https://api.example.com`                  | yes (HTTPS)  |
-| `BATON_DASHBOARD_URL`  | `https://app.example.com`                  | yes (HTTPS)  |
-| `PORT`                 | platform-provided (default 4000)           | usually auto |
-| _one login provider_   | Google and/or GitHub and/or OIDC — see §4  | yes (≥1)     |
-| `BATON_DEV_LOGIN`      | **unset / never `true`**                   | —            |
+| Variable               | Example / value                            | Required    |
+| ---------------------- | ------------------------------------------ | ----------- |
+| `NODE_ENV`             | `production`                               | yes         |
+| `DATABASE_URL`         | Neon **pooled** string (`…-pooler…`)       | yes         |
+| `BATON_TOKEN_PEPPER`   | random ≥32 chars — **rotate, keep secret** | yes         |
+| `BATON_COOKIE_SECRET`  | random ≥32 chars — **rotate, keep secret** | yes         |
+| `BATON_PUBLIC_API_URL` | `https://api.example.com`                  | yes (HTTPS) |
+| `BATON_DASHBOARD_URL`  | `https://app.example.com`                  | yes (HTTPS) |
+| _one login provider_   | Google and/or GitHub and/or OIDC — see §4  | yes (≥1)    |
+| `BATON_DEV_LOGIN`      | **unset / never `true`**                   | —           |
 
 In production the config loader **requires at least one login provider**
 (Google, GitHub, or a full generic OIDC set — §4), requires the public/dashboard
 URLs to be HTTPS, and forces `devLogin` off regardless of `BATON_DEV_LOGIN`.
 Generate a secret with `openssl rand -hex 24`.
+
+**Use Neon's pooled endpoint** for `DATABASE_URL` here. Each serverless instance
+opens its own pool, so many warm instances × a direct connection would exhaust
+Neon's connection limit. The pooled (`-pooler`) endpoint fronts them with
+PgBouncer; the client already sets `prepare: false`, which pooling requires.
+
+> **Container alternative.** If you ever want the API as a long-running
+> container instead of serverless, `apps/api/Dockerfile` still builds it
+> (context = repo root, health `GET /health/live`, listens on `PORT`/4000).
+> `apps/api/src/main.ts` and the serverless handler share the same wiring
+> (`apps/api/src/server.ts`), so both stay in lockstep.
 
 ---
 
@@ -180,16 +193,18 @@ The session is a cookie set by the API and sent by the dashboard on
 API and dashboard are the **same site**.
 
 **Do this:** put both behind one registrable domain via subdomains —
-`app.example.com` (Vercel) and `api.example.com` (Railway). Then they are
-same-site, the current `SameSite=Lax` + `__Host-` cookies work as-is, and CORS
-already allows the dashboard origin with credentials. No code change.
+`app.example.com` and `api.example.com`, each mapped to its Vercel project. Then
+they are same-site, the current `SameSite=Lax` + `__Host-` cookies work as-is,
+and CORS already allows the dashboard origin with credentials. No code change.
 
-**Do NOT** rely on the raw platform hostnames (`something.vercel.app` +
-`something.up.railway.app`). Those are **different sites** → the `Lax` session
-cookie is not sent on cross-site requests, and Safari blocks third-party cookies
-outright, so login silently fails. Making that work would require switching the
-cookie to `SameSite=None; Secure` in `apps/api/src/app.ts` (`cookieOptions`).
-Use custom subdomains instead and avoid the problem.
+**Do NOT** rely on the raw `*.vercel.app` hostnames (`dashboard-xxx.vercel.app`
+
+- `api-xxx.vercel.app`). `vercel.app` is on the Public Suffix List, so those two
+  subdomains are **different sites** → the `Lax` session cookie is not sent on
+  cross-site requests, and Safari blocks third-party cookies outright, so login
+  silently fails. Making that work would require switching the cookie to
+  `SameSite=None; Secure` in `apps/api/src/app.ts` (`cookieOptions`). Use custom
+  subdomains of one real domain instead and avoid the problem.
 
 Cookie behavior is already correct for HTTPS: `secure` flips on automatically
 (the cookie name becomes `__Host-baton_session`) when `BATON_PUBLIC_API_URL` is
@@ -217,6 +232,9 @@ dashboard shows all machines together.
 
 ## 7. Worker (later)
 
-`apps/worker` is a heartbeat-only stub today (durable jobs = Phase 2). When
-those land, deploy `apps/worker/Dockerfile` as a second service on the same host
-with the same `DATABASE_URL`. It needs no inbound port.
+`apps/worker` is a heartbeat-only stub today (durable jobs = Phase 2). Unlike
+the API, it is a **long-running background loop**, not request/response, so it
+does not fit Vercel serverless. When durable jobs land, run
+`apps/worker/Dockerfile` on a container host (Fly/Render) — or drive the work
+from a scheduler (e.g. Vercel Cron hitting an internal endpoint) — with the same
+`DATABASE_URL`. It needs no inbound port.

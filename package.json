@@ -1,0 +1,35 @@
+{
+  "name": "baton",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Portable AI memory for developers",
+  "type": "module",
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "node": ">=22.17.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "db:generate": "pnpm --filter @baton/database db:generate",
+    "db:migrate": "pnpm --filter @baton/database db:migrate",
+    "dev:api": "pnpm --filter @baton/api build && pnpm --filter @baton/api dev",
+    "dev:dashboard": "pnpm --filter @baton/dashboard dev",
+    "dev:worker": "pnpm --filter @baton/worker build && pnpm --filter @baton/worker start",
+    "baton-cloud": "pnpm --filter @baton/cli build && node apps/cli/dist/main.js",
+    "validate:workspace": "node scripts/validate-workspace.mjs",
+    "check": "pnpm format:check && pnpm validate:workspace && turbo run typecheck test build",
+    "test:legacy": "go test ./...",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@types/node": "22.20.1",
+    "prettier": "3.9.6",
+    "turbo": "2.10.7",
+    "typescript": "7.0.2",
+    "vite": "7.3.6",
+    "vitest": "4.1.10"
+  }
+}

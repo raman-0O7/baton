@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: baton
+      POSTGRES_USER: baton
+      POSTGRES_PASSWORD: baton
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U baton -d baton']
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - baton-postgres:/var/lib/postgresql/data
+
+volumes:
+  baton-postgres:

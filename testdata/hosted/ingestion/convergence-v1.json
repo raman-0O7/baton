@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "datasetKind": "ingestion_convergence",
+  "cases": [
+    {
+      "id": "retry-and-duplicate-event",
+      "origin": "synthetic_scenario",
+      "scenario": "duplicate",
+      "events": [
+        {
+          "eventId": "40950cf8-a9e6-8062-9eab-b1162dd470b7",
+          "idempotencyKey": "evt:v1:40950cf8a9e650629eabb1162dd470b7f44c15a14d2d371e5cd9b70cf34d049a",
+          "sourceSessionId": "80000000-0000-4000-8000-000000000001",
+          "workThreadId": null,
+          "sourceAgent": "claudecode",
+          "sourceDeviceId": "80000000-0000-4000-8000-000000000010",
+          "nativeSequence": 1,
+          "parentEventId": null,
+          "occurredAt": "2026-07-21T10:00:00Z",
+          "observedAt": "2026-07-21T10:00:01Z",
+          "contentHash": "daafe735f48d087121cb81261a2bc221380bdc32e5da8cfaa46cf9f0b3cd6d25",
+          "schemaVersion": 1,
+          "payload": {
+            "kind": "message",
+            "role": "user",
+            "text": "Start the migration."
+          }
+        }
+      ],
+      "deliveries": [
+        {
+          "batch": 1,
+          "eventIds": ["40950cf8-a9e6-8062-9eab-b1162dd470b7"],
+          "responseObserved": false
+        },
+        {
+          "batch": 2,
+          "eventIds": ["40950cf8-a9e6-8062-9eab-b1162dd470b7"],
+          "responseObserved": true
+        }
+      ],
+      "expected": {
+        "storedEventIds": ["40950cf8-a9e6-8062-9eab-b1162dd470b7"],
+        "duplicateEventIds": ["40950cf8-a9e6-8062-9eab-b1162dd470b7"],
+        "exactlyOnce": true
+      }
+    },
+    {
+      "id": "child-arrives-before-parent",
+      "origin": "synthetic_scenario",
+      "scenario": "out_of_order",
+      "events": [
+        {
+          "eventId": "54846323-70af-8e6c-943c-a10acabdd736",
+          "idempotencyKey": "evt:v1:5484632370af2e6c543ca10acabdd73643a24e917734c7c054ca6cebccac839b",
+          "sourceSessionId": "80000000-0000-4000-8000-000000000002",
+          "workThreadId": null,
+          "sourceAgent": "codex",
+          "sourceDeviceId": "80000000-0000-4000-8000-000000000010",
+          "nativeSequence": 1,
+          "parentEventId": null,
+          "occurredAt": "2026-07-21T11:00:00Z",
+          "observedAt": "2026-07-21T11:00:02Z",
+          "contentHash": "8c2c4dbf7c904527d6daa3a9921c74224d926ae59b72f612e92e4e128aa7d4de",
+          "schemaVersion": 1,
+          "payload": {
+            "kind": "message",
+            "role": "user",
+            "text": "Add authentication."
+          }
+        },
+        {
+          "eventId": "301b610a-b506-89b1-a2ea-1a9d2fa7ae72",
+          "idempotencyKey": "evt:v1:301b610ab506a9b1e2ea1a9d2fa7ae72e70121503890f3022da8e18d113f2f68",
+          "sourceSessionId": "80000000-0000-4000-8000-000000000002",
+          "workThreadId": null,
+          "sourceAgent": "codex",
+          "sourceDeviceId": "80000000-0000-4000-8000-000000000010",
+          "nativeSequence": 2,
+          "parentEventId": "54846323-70af-8e6c-943c-a10acabdd736",
+          "occurredAt": "2026-07-21T11:00:01Z",
+          "observedAt": "2026-07-21T11:00:01Z",
+          "contentHash": "2bdae3fc15c2fb26bbdbec6a4432fe3921e4865dafe692807f4342983beb897f",
+          "schemaVersion": 1,
+          "payload": {
+            "kind": "message",
+            "role": "assistant",
+            "text": "I will add device authentication."
+          }
+        }
+      ],
+      "deliveries": [
+        { "batch": 1, "eventIds": ["301b610a-b506-89b1-a2ea-1a9d2fa7ae72"] },
+        { "batch": 2, "eventIds": ["54846323-70af-8e6c-943c-a10acabdd736"] }
+      ],
+      "expected": {
+        "storedEventIds": [
+          "54846323-70af-8e6c-943c-a10acabdd736",
+          "301b610a-b506-89b1-a2ea-1a9d2fa7ae72"
+        ],
+        "projectedOrder": [
+          "54846323-70af-8e6c-943c-a10acabdd736",
+          "301b610a-b506-89b1-a2ea-1a9d2fa7ae72"
+        ],
+        "unresolvedParentIds": []
+      }
+    },
+    {
+      "id": "two-devices-diverge-from-one-parent",
+      "origin": "synthetic_scenario",
+      "scenario": "divergence",
+      "events": [
+        {
+          "eventId": "2b7e393b-106f-8f93-b820-e9bd1a724d75",
+          "idempotencyKey": "evt:v1:2b7e393b106fcf93b820e9bd1a724d756ade4c5edbec57199d3f71e19a97e79c",
+          "sourceSessionId": "80000000-0000-4000-8000-000000000003",
+          "workThreadId": "80000000-0000-4000-8000-000000000030",
+          "sourceAgent": "opencode",
+          "sourceDeviceId": "80000000-0000-4000-8000-000000000010",
+          "nativeSequence": 1,
+          "parentEventId": null,
+          "occurredAt": "2026-07-21T12:00:00Z",
+          "observedAt": "2026-07-21T12:00:01Z",
+          "contentHash": "da4c21ace24386482740e6f7e6845ee828b1cef0b7e7c8f1aa22ebbe2bd33189",
+          "schemaVersion": 1,
+          "payload": { "kind": "decision", "summary": "Use PostgreSQL." }
+        },
+        {
+          "eventId": "f20d0367-45e3-88b2-beb5-19cedaa85919",
+          "idempotencyKey": "evt:v1:f20d036745e358b2beb519cedaa859193f886f7aa85e51206f319e0535d6bcfc",
+          "sourceSessionId": "80000000-0000-4000-8000-000000000003",
+          "workThreadId": "80000000-0000-4000-8000-000000000030",
+          "sourceAgent": "opencode",
+          "sourceDeviceId": "80000000-0000-4000-8000-000000000010",
+          "nativeSequence": 2,
+          "parentEventId": "2b7e393b-106f-8f93-b820-e9bd1a724d75",
+          "occurredAt": "2026-07-21T12:01:00Z",
+          "observedAt": "2026-07-21T12:01:01Z",
+          "contentHash": "afbe7ec37e32dbcb0e29a4160d115ae5aacef95e7bde0381d985bec0f2ebfd33",
+          "schemaVersion": 1,
+          "payload": {
+            "kind": "task",
+            "text": "Add pgvector.",
+            "status": "in_progress"
+          }
+        },
+        {
+          "eventId": "6d99f491-2f77-8550-9e64-332a76260c3e",
+          "idempotencyKey": "evt:v1:6d99f4912f77d550de64332a76260c3e3b4282fd9a8d83fb49a72b7f1fa2d7ad",
+          "sourceSessionId": "80000000-0000-4000-8000-000000000003",
+          "workThreadId": "80000000-0000-4000-8000-000000000030",
+          "sourceAgent": "opencode",
+          "sourceDeviceId": "80000000-0000-4000-8000-000000000011",
+          "nativeSequence": 2,
+          "parentEventId": "2b7e393b-106f-8f93-b820-e9bd1a724d75",
+          "occurredAt": "2026-07-21T12:01:02Z",
+          "observedAt": "2026-07-21T12:01:03Z",
+          "contentHash": "c358a3601493e6260f8ca111a02aafeaf42f69e7b7e88360bb7cf7fdc4a530be",
+          "schemaVersion": 1,
+          "payload": {
+            "kind": "task",
+            "text": "Benchmark full-text search first.",
+            "status": "in_progress"
+          }
+        }
+      ],
+      "deliveries": [
+        {
+          "batch": 1,
+          "eventIds": [
+            "2b7e393b-106f-8f93-b820-e9bd1a724d75",
+            "f20d0367-45e3-88b2-beb5-19cedaa85919"
+          ]
+        },
+        { "batch": 2, "eventIds": ["6d99f491-2f77-8550-9e64-332a76260c3e"] }
+      ],
+      "expected": {
+        "storedEventIds": [
+          "2b7e393b-106f-8f93-b820-e9bd1a724d75",
+          "f20d0367-45e3-88b2-beb5-19cedaa85919",
+          "6d99f491-2f77-8550-9e64-332a76260c3e"
+        ],
+        "branchHeads": [
+          "f20d0367-45e3-88b2-beb5-19cedaa85919",
+          "6d99f491-2f77-8550-9e64-332a76260c3e"
+        ],
+        "commonParentId": "2b7e393b-106f-8f93-b820-e9bd1a724d75",
+        "branchCreated": true,
+        "proseMerged": false
+      }
+    }
+  ]
+}

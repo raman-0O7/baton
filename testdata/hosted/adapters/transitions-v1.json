@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "datasetKind": "adapter_transitions",
+  "cases": [
+    {
+      "id": "claudecode-incremental-append",
+      "agents": ["claudecode"],
+      "origin": "derived_from_sanitized_fixture",
+      "scenario": "incremental_append",
+      "sourceFixtures": [
+        "testdata/fixtures/claudecode/2026-07/session-basic.jsonl"
+      ],
+      "steps": [
+        { "readCompleteLines": 7, "expectedEventKeys": ["turn:0", "turn:1"] },
+        {
+          "readCompleteLines": 11,
+          "expectedNewEventKeys": ["turn:2", "turn:3"]
+        }
+      ],
+      "invariants": [
+        "A full read after the append has the same semantic event keys as the second incremental state.",
+        "Previously emitted native records are not emitted again."
+      ]
+    },
+    {
+      "id": "codex-incremental-append",
+      "agents": ["codex"],
+      "origin": "derived_from_sanitized_fixture",
+      "scenario": "incremental_append",
+      "sourceFixtures": [
+        "testdata/fixtures/codex/2026-07-rollout/rollout-2026-07-09T11-00-00-bbbb2222-cccc-4ddd-8eee-ffff00000002.jsonl"
+      ],
+      "steps": [
+        { "readCompleteLines": 3, "expectedEventKeys": ["turn:0", "turn:1"] },
+        {
+          "readCompleteLines": 6,
+          "expectedNewEventKeys": [
+            "tool_call:0",
+            "tool_result:0",
+            "file_op:0",
+            "turn:2"
+          ]
+        }
+      ],
+      "invariants": [
+        "A full read after the append has the same semantic event keys as the second incremental state.",
+        "The function output is associated with call_00000001."
+      ]
+    },
+    {
+      "id": "opencode-incremental-rows",
+      "agents": ["opencode"],
+      "origin": "derived_from_sanitized_fixture",
+      "scenario": "incremental_append",
+      "sourceFixtures": [
+        "testdata/fixtures/opencode/2026-07-db/session-tools.sql"
+      ],
+      "steps": [
+        {
+          "visiblePartIds": ["prt_t1a", "prt_t2a"],
+          "expectedEventKeys": ["turn:0", "turn:1"]
+        },
+        {
+          "visiblePartIds": ["prt_t1a", "prt_t2a", "prt_t2b", "prt_t2c"],
+          "expectedNewEventKeys": [
+            "tool_call:0",
+            "tool_result:0",
+            "file_op:0",
+            "tool_call:1",
+            "tool_result:1"
+          ]
+        }
+      ],
+      "invariants": [
+        "Rows are read from one SQLite snapshot.",
+        "The cursor does not skip two rows with different IDs that share a timestamp."
+      ]
+    },
+    {
+      "id": "codex-partial-final-line",
+      "agents": ["codex"],
+      "origin": "derived_from_sanitized_fixture",
+      "scenario": "partial_final_line",
+      "sourceFixtures": [
+        "testdata/fixtures/codex/2026-07-rollout/rollout-2026-07-09T10-00-00-aaaa1111-bbbb-4ccc-8ddd-eeee00000001.jsonl"
+      ],
+      "steps": [
+        {
+          "completeLines": 4,
+          "partialLine": 5,
+          "splitAfterLiteral": "Use os.ReadDir",
+          "expectedNewEventKeys": []
+        },
+        { "completeLines": 5, "expectedNewEventKeys": ["turn:1"] }
+      ],
+      "invariants": [
+        "An incomplete JSONL record is neither emitted nor acknowledged.",
+        "Completing the line emits exactly one assistant message."
+      ]
+    },
+    {
+      "id": "claudecode-truncation-rewrite",
+      "agents": ["claudecode"],
+      "origin": "synthetic_scenario",
+      "scenario": "truncation_rewrite",
+      "sourceFixtures": [
+        "testdata/hosted/adapters/specimens/claudecode-rewrite-before.jsonl",
+        "testdata/hosted/adapters/specimens/claudecode-rewrite-after.jsonl"
+      ],
+      "steps": [
+        {
+          "snapshot": "before",
+          "completeLines": 2,
+          "expectedTexts": ["Use database/sql."]
+        },
+        {
+          "snapshot": "after",
+          "completeLines": 2,
+          "expectedTexts": ["Use pgxpool."]
+        }
+      ],
+      "invariants": [
+        "A shorter or changed fingerprint invalidates an append-only byte cursor.",
+        "Reconciliation reparses the current complete snapshot instead of silently retaining stale text.",
+        "The unchanged user native ID remains deterministic; the replaced assistant native ID is distinct."
+      ]
+    }
+  ]
+}

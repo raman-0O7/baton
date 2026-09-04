@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1785670157185,
+      "tag": "0000_phase1_identity",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785680482762,
+      "tag": "0001_phase2_ingestion",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785925081660,
+      "tag": "0002_phase3_work_threads",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785928308826,
+      "tag": "0003_phase4_chunks",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786080406368,
+      "tag": "0004_phase6_memory",
+      "breakpoints": true
+    }
+  ]
+}

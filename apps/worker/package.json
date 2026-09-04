@@ -1,0 +1,16 @@
+{
+  "name": "@baton/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "start": "node --enable-source-maps dist/main.js"
+  },
+  "dependencies": {
+    "@baton/config": "workspace:*",
+    "@baton/observability": "workspace:*"
+  }
+}

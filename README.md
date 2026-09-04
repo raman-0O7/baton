@@ -1,89 +1,134 @@
-# baton
+# Baton
 
-Sync AI coding-agent sessions, skills, and MCP server configs across
-devices — and hand off an in-progress session from one agent to another
-when a usage limit strikes.
+Baton is becoming a hosted, portable memory layer for developers and their AI
+coding agents.
 
-Supported agents: **Claude Code**, **opencode**, **Codex CLI**.
-Platforms: **macOS, Linux, Windows** (amd64 + arm64) — one static binary,
-zero dependencies. Backend: **any git remote you own** (a private
-GitHub/Gitea repo). No accounts, no hosted service, fully offline-capable.
+The product will continuously capture conversations from explicitly enabled
+projects, organize Claude Code, Codex, and OpenCode sessions into cross-agent
+work threads, and let a fresh agent retrieve only the context it needs. It will
+also maintain user-approved, evidence-backed preferences and workflows through
+layered memory.
 
-## Install
+The hosted product has completed its Phase 0 engineering foundation, Phase 1
+cloud identity/device-login foundation, Phase 2 incremental capture and cloud
+sync (live PostgreSQL gate included), Phase 3 cross-agent work threads with a
+first useful dashboard, Phase 4 indexed retrieval with a token-budgeted, fully
+cited context compiler, Phase 5 a read-only Baton MCP surface, Phase 6
+user-approved, evidence-backed personal memory, and Phase 7 the trust and
+lifecycle layer — export, cross-store deletion, quotas, and a privacy dashboard.
+A work thread can begin in Claude on one device and continue in Codex on another
+as a single, user-confirmed thread; a fresh agent — through the Baton MCP server
+— resumes it with a compact, cited context instead of the whole transcript;
+Baton proposes personal preferences that only reach an agent after the user
+approves them; and a user can export or permanently delete all of their data at
+any time. The application is feature-complete through the plan's Phase 7; Phase
+8 options are deferred until usage justifies them, and remaining production
+readiness is operational (managed infrastructure, billing, load and
+accessibility testing). It is not yet available as a production service.
 
-Grab the binary for your OS from
-[Releases](../../releases/latest) and put it on your PATH — that's the
-whole install. Or with Go: `go install <module>/cmd/baton@latest`.
+## Product direction
 
-## Why
-
-- **Rate-limit stranding.** Your Claude Code quota runs out mid-task; the
-  accumulated context is trapped. `baton export --to opencode`
-  produces a mechanical handoff document (no LLM call — your quota is
-  exactly what just died) that the next agent ingests and continues from.
-- **Device stranding.** Sessions live on one machine. `baton push`
-  on the desktop, `baton pull` on the laptop, `claude --resume`
-  shows the same session at the laptop's own project path.
-
-## Quick start
+The intended experience is:
 
 ```console
-# one-time, per device
-baton init --remote git@github.com:you/baton-data.git
-
-# per project, per device
-cd ~/code/myproject
+baton login
+cd ~/code/my-project
 baton enable
-
-# work with your agent, then
-baton push        # scrub → commit → push
-# on another device
-baton pull        # place sessions into local agent storage
-claude --resume        # continue
-
-# limit hit? hand off to another agent
-baton export --to opencode
-opencode run "$(cat handoff.md)"
-
-# zero-touch mode
-baton daemon      # or: baton daemon install-template
+baton daemon
+baton continue
 ```
 
-Skills and MCP configs:
+Users will not configure Git repositories or restore private native-agent
+session files. Baton Cloud will store normalized, append-only conversation
+events and provide compact, cited context through the CLI, dashboard, and MCP.
+
+Core principles:
+
+- explicit project opt-in and continuous cloud synchronization;
+- local secret scrubbing before content leaves the device;
+- work threads that span agents, conversations, devices, and time;
+- progressive context retrieval instead of full-transcript handoffs;
+- generated summaries and memories linked to original evidence;
+- inferred personal preferences require user approval;
+- export, deletion, retention, and device controls are product requirements.
+
+The architecture and phased delivery plan are in
+[`HOSTED_PRODUCT_IMPLEMENTATION_PLAN.md`](HOSTED_PRODUCT_IMPLEMENTATION_PLAN.md).
+
+## Development
+
+New hosted development is TypeScript-first:
 
 ```console
-baton skills push / pull          # replicate skill dirs per agent
-baton mcp import --agent claudecode --path .mcp.json
-baton mcp emit --agent codex      # translate to another agent's syntax
+pnpm install
+pnpm check
 ```
 
-## Security model
+The repository uses strict TypeScript, pnpm workspaces, and Turborepo. Hosted
+applications will live under `apps/`, while shared product packages live under
+`packages/`.
 
-- **Mandatory scrub.** Every artifact passes a pattern + entropy secret
-  scanner before staging; the git layer's only write path requires a
-  scrub result by construction. Scrubbing is best-effort — use a private
-  remote, and encryption for sensitive work.
-- **MCP secrets never sync.** Credential values are externalized to a
-  device-local, 0600, never-synced `secrets.toml` and travel as
-  placeholders.
-- **Optional end-to-end encryption.** `baton init --encrypt`
-  generates an age identity; artifacts are sealed after scrubbing, so the
-  git host sees opaque blobs. Trade-off: no remote-side diffs.
-- **Fork, never merge.** Divergent session timelines are both preserved
-  as sibling sessions; nothing is overwritten, nothing locks.
+The Phase 0 packages define cloud-safe protocols, incremental Claude/Codex/
+OpenCode adapters, the mandatory local secret scrubber, and the evaluation
+corpus. Phase 1 adds the hosted API, PostgreSQL identity store, dashboard,
+worker, typed cloud client, and device login. Phase 2 adds incremental Claude
+Code, Codex, and OpenCode capture; tenant-aware ingestion; and the TypeScript
+CLI commands `enable`, `status`, `pause`, `resume`, `disable`, and `daemon`.
+Complete native session payloads are intentionally excluded from upload schemas.
+Phase 3 adds cross-agent work threads: thread CRUD and source-session
+assignment, conservative evidence-based thread suggestions, materialized thread
+state, a dashboard work view and thread timeline, and the `baton continue`
+command. Phase 4 adds indexed retrieval: a semantic-boundary chunker,
+deterministic lexical search (PostgreSQL full-text search with an in-memory
+mirror), and a token-budgeted, fully cited context compiler exposed as retrieval
+search and thread-context APIs plus dashboard search. Phase 5 adds the read-only
+Baton MCP surface: cited-context tools, a stdio MCP server, and the `baton mcp`
+command so a fresh agent can resume a work thread without the full transcript.
+Phase 6 adds layered personal memory: a deterministic candidate validator with a
+prohibited-sensitive-category filter, a SOUL renderer, an approval inbox, and an
+MCP tool that returns only user-approved, evidence-backed claims. Phase 7 adds
+the trust and lifecycle layer: account/project export, cross-store deletion with
+an observable receipt, deterministic quotas and retention, a privacy dashboard,
+and `baton migrate cloud --dry-run`. Operator runbooks and the trust/privacy
+outline are under `docs/operations/` and `docs/legal/`.
+
+For local hosted setup, see
+[`docs/development/hosted-local.md`](docs/development/hosted-local.md). The
+Phase 2 capture behavior and controls are documented in
+[`docs/development/incremental-sync.md`](docs/development/incremental-sync.md).
+
+## Legacy Go prototype
+
+The existing Go implementation remains in `cmd/` and `internal/` as a working
+legacy prototype and behavioral reference. It supports user-managed Git sync,
+native session restoration, mechanical Markdown handoffs, skills/MCP
+replication, secret scrubbing, and optional age encryption.
+
+It will remain independently buildable during the migration:
+
+```console
+go test ./...
+go build ./cmd/baton
+```
+
+Existing Git repositories, configuration, and age keys will not be silently
+uploaded, moved, or deleted. A future migration command will provide a preview
+and require explicit confirmation.
+
+No new hosted functionality should be implemented in Go. Its adapter fixtures,
+format research, scrubber corpus, and tests serve as specifications for the
+TypeScript port.
 
 ## Documentation
 
-- `REQUIREMENTS.md` — locked product decisions
-- `IMPLEMENTATION_PLAN.md` — architecture and phase plan
+- `HOSTED_PRODUCT_IMPLEMENTATION_PLAN.md` — current hosted product direction,
+  architecture, migration strategy, and phased execution plan
+- `REQUIREMENTS.md` — original local/Git prototype product decisions
+- `IMPLEMENTATION_PLAN.md` — completed local/Git prototype architecture and
+  phase plan
 - `docs/formats/` — reverse-engineered per-agent storage formats
-
-## Status
-
-All M1–M3 milestone gates pass in CI (two-device sync E2E, handoff
-validation, daemon soak, encrypted round-trip). Codex adapter is built
-from public format documentation — not yet validated against a live
-install; see `docs/formats/codex.md`.
+- `docs/architecture/` — hosted-runtime and event-store decisions
+- `docs/security/` — hosted threat, consent, retention, and deletion contracts
 
 ## License
 

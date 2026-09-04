@@ -1,0 +1,25 @@
+{
+  "name": "@baton/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "baton": "./dist/main.js",
+    "baton-cloud": "./dist/main.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "dev": "node --enable-source-maps dist/main.js"
+  },
+  "dependencies": {
+    "@baton/capture": "workspace:*",
+    "@baton/cloud-client": "workspace:*",
+    "@baton/config": "workspace:*",
+    "@baton/mcp": "workspace:*",
+    "@baton/protocol": "workspace:*",
+    "@baton/sync": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.30.0"
+  }
+}

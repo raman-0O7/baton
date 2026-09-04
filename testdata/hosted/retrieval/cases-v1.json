@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "datasetKind": "retrieval",
+  "origin": "derived_from_sanitized_fixture",
+  "evidence": [
+    {
+      "id": "ev-claude-rename-result",
+      "sourceGolden": "testdata/fixtures/claudecode/2026-07/expected-session-tools.json",
+      "sourcePointer": "/turns/4",
+      "text": "Done: greet.go created and the function renamed to Hello. Unit tests remain as a follow-up.",
+      "projectId": "fixture-go-project",
+      "workThreadId": "greeting-helper"
+    },
+    {
+      "id": "ev-claude-rename-diff",
+      "sourceGolden": "testdata/fixtures/claudecode/2026-07/expected-session-tools.json",
+      "sourcePointer": "/file_ops/1",
+      "text": "greet.go changed func Greet to func Hello.",
+      "projectId": "fixture-go-project",
+      "workThreadId": "greeting-helper"
+    },
+    {
+      "id": "ev-claude-pending-tests",
+      "sourceGolden": "testdata/fixtures/claudecode/2026-07/expected-session-tools.json",
+      "sourcePointer": "/todos/1",
+      "text": "Add unit tests is pending.",
+      "projectId": "fixture-go-project",
+      "workThreadId": "greeting-helper"
+    },
+    {
+      "id": "ev-opencode-build",
+      "sourceGolden": "testdata/fixtures/opencode/2026-07-db/expected-session-tools.json",
+      "sourcePointer": "/tool_calls/1",
+      "text": "go build ./... completed with output ok.",
+      "projectId": "fixture-config-project",
+      "workThreadId": "config-loader"
+    },
+    {
+      "id": "ev-opencode-config-file",
+      "sourceGolden": "testdata/fixtures/opencode/2026-07-db/expected-session-tools.json",
+      "sourcePointer": "/file_ops/0",
+      "text": "config.go was created through the OpenCode write tool.",
+      "projectId": "fixture-config-project",
+      "workThreadId": "config-loader"
+    },
+    {
+      "id": "ev-codex-read-dir",
+      "sourceGolden": "testdata/fixtures/codex/2026-07-rollout/expected-session-basic.json",
+      "sourcePointer": "/turns/1",
+      "text": "Use os.ReadDir — it returns entries sorted by filename.",
+      "projectId": "fixture-go-project",
+      "workThreadId": "directory-listing"
+    }
+  ],
+  "cases": [
+    {
+      "id": "why-greeting-api-is-hello",
+      "question": "What happened to the original Greet function name?",
+      "projectId": "fixture-go-project",
+      "workThreadId": "greeting-helper",
+      "expectedEvidenceIds": [
+        "ev-claude-rename-result",
+        "ev-claude-rename-diff"
+      ],
+      "excludedEvidenceIds": ["ev-opencode-build", "ev-codex-read-dir"],
+      "maxContextTokens": 160
+    },
+    {
+      "id": "greeting-follow-up",
+      "question": "What work is still pending for the greeting helper?",
+      "projectId": "fixture-go-project",
+      "workThreadId": "greeting-helper",
+      "expectedEvidenceIds": ["ev-claude-pending-tests"],
+      "excludedEvidenceIds": ["ev-opencode-config-file"],
+      "maxContextTokens": 80
+    },
+    {
+      "id": "config-build-result",
+      "question": "Did the config loader build succeed, and which file was written?",
+      "projectId": "fixture-config-project",
+      "workThreadId": "config-loader",
+      "expectedEvidenceIds": ["ev-opencode-build", "ev-opencode-config-file"],
+      "excludedEvidenceIds": ["ev-claude-rename-result"],
+      "maxContextTokens": 140
+    }
+  ]
+}

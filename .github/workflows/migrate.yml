@@ -1,0 +1,41 @@
+# Applies database migrations to the hosted Postgres (Neon) as a deliberate
+# release step — NOT at Vercel build time (that would run per-build, on preview
+# deploys, and through the pooled endpoint that chokes on DDL).
+#
+# Requires a repository secret `NEON_DIRECT_URL`: Neon's **direct** (non-pooled,
+# no `-pooler` in the host) connection string. Set it in
+# Settings → Secrets and variables → Actions before this runs.
+name: migrate
+
+on:
+  # Auto-run only when a migration file actually changes, on the deploy branch.
+  push:
+    branches: [main, hosted-migration]
+    paths:
+      - "packages/database/migrations/**"
+  # Manual trigger for the first schema creation or an ad-hoc re-run.
+  workflow_dispatch:
+
+# Never let two migration runs overlap.
+concurrency:
+  group: db-migrate
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.NEON_DIRECT_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @baton/database build
+      - run: pnpm db:migrate

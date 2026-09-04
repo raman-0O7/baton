@@ -82,6 +82,17 @@ rewrites every path to `apps/api/api/index.ts`, which builds the wired app once
 per warm instance and serves each request through Fastify. The build compiles
 the workspace with `pnpm --filter @baton/api... build`.
 
+Two config details make this work on Vercel and are already in `vercel.json`:
+
+- **Empty `public/` output dir.** A `framework: null` project with a custom
+  build command must emit an output directory, but this is a pure API with no
+  static frontend. `apps/api/public/.gitkeep` gives Vercel an (empty) output
+  directory to satisfy that check; the catch-all rewrite means nothing static is
+  ever served — every path hits the function.
+- **Relative import, not the package self-reference.** `api/index.ts` imports
+  `../dist/server.js` (a real built file), not `@baton/api/server`. pnpm creates
+  no self-symlink, so Vercel's function bundler cannot resolve a self-reference.
+
 Create a **second Vercel project** (separate from the dashboard), same repo:
 
 - **Root Directory:** `apps/api`

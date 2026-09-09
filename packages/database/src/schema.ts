@@ -630,6 +630,19 @@ export const memories = pgTable(
   ],
 );
 
+/**
+ * Per-tenant high-water mark for the managed-model memory extractor. The worker
+ * advances `last_ingested_at` after each run so a scheduled pass only calls the
+ * model when new source events have arrived — never re-scanning a quiet tenant.
+ */
+export const memoryExtractionState = pgTable('memory_extraction_state', {
+  tenantId: uuid('tenant_id').primaryKey(),
+  lastIngestedAt: timestamp('last_ingested_at', {
+    withTimezone: true,
+  }).notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+});
+
 export const identitySchema = {
   tenants,
   users,
@@ -654,4 +667,5 @@ export const identitySchema = {
   chunks,
   memoryCandidates,
   memories,
+  memoryExtractionState,
 };

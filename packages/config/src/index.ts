@@ -229,6 +229,17 @@ export interface WorkerConfig {
   environment: z.infer<typeof EnvironmentSchema>;
   databaseUrl: string;
   heartbeatIntervalMs: number;
+  /**
+   * The managed-model extraction settings. `anthropicApiKey` is null when no
+   * key is configured — the memory extractor then runs its deterministic
+   * fallback (or is skipped) rather than failing the worker.
+   */
+  extraction: {
+    anthropicApiKey: string | null;
+    model: string;
+    windowPerProject: number;
+    maxProjectsPerRun: number;
+  };
 }
 
 const WorkerEnvironmentSchema = z
@@ -241,6 +252,20 @@ const WorkerEnvironmentSchema = z
       .min(1_000)
       .max(300_000)
       .default(30_000),
+    ANTHROPIC_API_KEY: z.string().min(1).optional(),
+    BATON_EXTRACTION_MODEL: z.string().min(1).default('claude-opus-5'),
+    BATON_EXTRACTION_WINDOW: z.coerce
+      .number()
+      .int()
+      .min(10)
+      .max(1_000)
+      .default(200),
+    BATON_EXTRACTION_MAX_PROJECTS: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(1_000)
+      .default(100),
   })
   .passthrough();
 
@@ -250,6 +275,12 @@ export function loadWorkerConfig(environment: NodeJS.ProcessEnv): WorkerConfig {
     environment: value.NODE_ENV,
     databaseUrl: value.DATABASE_URL,
     heartbeatIntervalMs: value.BATON_WORKER_HEARTBEAT_MS,
+    extraction: {
+      anthropicApiKey: value.ANTHROPIC_API_KEY ?? null,
+      model: value.BATON_EXTRACTION_MODEL,
+      windowPerProject: value.BATON_EXTRACTION_WINDOW,
+      maxProjectsPerRun: value.BATON_EXTRACTION_MAX_PROJECTS,
+    },
   };
 }
 

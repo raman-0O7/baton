@@ -12,3 +12,8 @@ export {
   type ExtractionEvent,
   type ModelGateway,
 } from './gateway.js';
+export {
+  AnthropicModelGateway,
+  createAnthropicModelGateway,
+  type MessagesCreateClient,
+} from './anthropic-gateway.js';

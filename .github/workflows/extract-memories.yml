@@ -1,0 +1,54 @@
+# Runs the managed-model memory extractor as a scheduled batch job — reads new
+# captured messages, asks Claude to propose durable preferences, and records
+# them as memory candidates for the user to approve in the dashboard. Nothing
+# here approves a memory; a person still does that.
+#
+# Cost & safety:
+#   - A per-tenant cursor means the model is only called when new events have
+#     arrived, so a quiet account costs nothing beyond the runner minute.
+#   - Extraction runs as a normal (non-superuser) role under row-level security,
+#     one tenant at a time — it never bypasses tenant isolation.
+#
+# Requires two repository secrets:
+#   - NEON_DIRECT_URL   Neon connection string (the same one the migrate job uses).
+#   - ANTHROPIC_API_KEY Anthropic API key. Without it the job is a clean no-op.
+#
+# Optional repository variables (override defaults):
+#   - BATON_EXTRACTION_MODEL         default claude-opus-5
+#   - BATON_EXTRACTION_WINDOW        recent messages per project (default 200)
+#   - BATON_EXTRACTION_MAX_PROJECTS  projects per run (default 100)
+name: extract-memories
+
+on:
+  schedule:
+    # Every 2 hours. Extraction is not latency-sensitive; tune to taste.
+    - cron: "0 */2 * * *"
+  workflow_dispatch:
+
+# Never let two extraction runs overlap.
+concurrency:
+  group: memory-extraction
+  cancel-in-progress: false
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.NEON_DIRECT_URL }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      BATON_EXTRACTION_MODEL: ${{ vars.BATON_EXTRACTION_MODEL }}
+      BATON_EXTRACTION_WINDOW: ${{ vars.BATON_EXTRACTION_WINDOW }}
+      BATON_EXTRACTION_MAX_PROJECTS: ${{ vars.BATON_EXTRACTION_MAX_PROJECTS }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @baton/worker... build
+      - run: pnpm --filter @baton/worker extract

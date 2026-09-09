@@ -18,6 +18,7 @@
     "dev:dashboard": "pnpm --filter @baton/dashboard dev",
     "dev:worker": "pnpm --filter @baton/worker build && pnpm --filter @baton/worker start",
     "baton-cloud": "pnpm --filter @baton/cli build && node apps/cli/dist/main.js",
+    "release:cli": "pnpm --filter @baton/cli... build && pnpm --filter @baton/cli publish --access public --no-git-checks",
     "validate:workspace": "node scripts/validate-workspace.mjs",
     "check": "pnpm format:check && pnpm validate:workspace && turbo run typecheck test build",
     "test:legacy": "go test ./...",

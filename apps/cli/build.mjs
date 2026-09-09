@@ -1,10 +1,10 @@
-// Bundles the CLI into a single self-contained ESM file so `@baton/cli` can be
+// Bundles the CLI into a single self-contained ESM file so `baton-cloud` can be
 // published to npm and installed with `npm i -g` without any of the private
 // `@baton/*` workspace packages (or zod / the MCP SDK) needing to exist on the
 // registry — esbuild inlines them all. Node built-ins stay external.
 //
 // The workspace deps resolve to their built `dist/` output, so this must run
-// after `pnpm --filter @baton/cli... build` has compiled them.
+// after `pnpm --filter baton-cloud... build` has compiled them.
 import { rm } from 'node:fs/promises';
 
 import { build } from 'esbuild';

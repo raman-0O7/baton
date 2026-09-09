@@ -7,7 +7,7 @@ const workspaceRoots = ['apps', 'packages'];
 // Packages intentionally published to npm: exempt from the private/0.0.0 guard
 // (they carry a real semver version and `publishConfig.access`), but still held
 // to ESM and the workspace:* internal-dependency rules below.
-const publishablePackages = new Set(['@baton/cli']);
+const publishablePackages = new Set(['baton-cloud']);
 const semver = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 const dependencyFields = [
   'dependencies',

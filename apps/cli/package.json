@@ -1,5 +1,5 @@
 {
-  "name": "@baton/cli",
+  "name": "baton-cloud",
   "version": "0.5.0",
   "description": "Baton — portable working memory for coding agents. Capture, sync, and resume context across Claude Code, Codex, and OpenCode.",
   "license": "UNLICENSED",

@@ -8,7 +8,7 @@ scrubbed before they ever leave your device.
 ## Install
 
 ```bash
-npm i -g @baton/cli
+npm i -g baton-cloud
 ```
 
 Requires Node.js ≥ 22. The command is installed as `baton` (and `baton-cloud`).

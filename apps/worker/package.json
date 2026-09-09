@@ -7,10 +7,15 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests",
-    "start": "node --enable-source-maps dist/main.js"
+    "start": "node --enable-source-maps dist/main.js",
+    "extract": "node --enable-source-maps dist/extract-main.js"
   },
   "dependencies": {
+    "@baton/auth": "workspace:*",
     "@baton/config": "workspace:*",
-    "@baton/observability": "workspace:*"
+    "@baton/database": "workspace:*",
+    "@baton/memory": "workspace:*",
+    "@baton/observability": "workspace:*",
+    "@baton/protocol": "workspace:*"
   }
 }

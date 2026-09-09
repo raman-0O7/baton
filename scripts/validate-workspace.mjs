@@ -4,6 +4,11 @@ import process from 'node:process';
 
 const root = process.cwd();
 const workspaceRoots = ['apps', 'packages'];
+// Packages intentionally published to npm: exempt from the private/0.0.0 guard
+// (they carry a real semver version and `publishConfig.access`), but still held
+// to ESM and the workspace:* internal-dependency rules below.
+const publishablePackages = new Set(['baton-cloud']);
+const semver = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 const dependencyFields = [
   'dependencies',
   'devDependencies',
@@ -83,11 +88,26 @@ for (const workspace of workspaces) {
   } else {
     names.set(manifest.name, label);
   }
-  if (manifest.private !== true) {
-    errors.push(`${label}: workspace packages must be private`);
-  }
-  if (manifest.version !== '0.0.0') {
-    errors.push(`${label}: workspace version must be 0.0.0 before release`);
+  if (publishablePackages.has(manifest.name)) {
+    if (manifest.private === true) {
+      errors.push(`${label}: publishable package must not be private`);
+    }
+    if (
+      typeof manifest.version !== 'string' ||
+      !semver.test(manifest.version)
+    ) {
+      errors.push(`${label}: publishable package needs a semver version`);
+    }
+    if (manifest.publishConfig?.access !== 'public') {
+      errors.push(`${label}: publishable package needs publishConfig.access`);
+    }
+  } else {
+    if (manifest.private !== true) {
+      errors.push(`${label}: workspace packages must be private`);
+    }
+    if (manifest.version !== '0.0.0') {
+      errors.push(`${label}: workspace version must be 0.0.0 before release`);
+    }
   }
   if (manifest.type !== 'module') {
     errors.push(`${label}: workspace packages must use ESM`);

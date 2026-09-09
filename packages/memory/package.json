@@ -18,6 +18,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@baton/protocol": "workspace:*"
+    "@anthropic-ai/sdk": "0.124.0",
+    "@baton/protocol": "workspace:*",
+    "zod": "4.4.3"
   }
 }

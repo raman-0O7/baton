@@ -93,15 +93,9 @@ a {
   letter-spacing: 0.22em;
 }
 .wordmark-mark {
-  display: grid;
-  place-items: center;
+  display: block;
   width: 2.1rem;
   height: 2.1rem;
-  color: var(--paper-light);
-  background: var(--ink);
-  font-family: var(--serif);
-  font-size: 1.15rem;
-  letter-spacing: 0;
 }
 .masthead-note,
 .folio,

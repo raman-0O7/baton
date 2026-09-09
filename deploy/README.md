@@ -39,7 +39,7 @@ long-running container instead; see the note at the end of §2.)
 | Postgres            | Neon (free)             | Managed. Run migrations against it.    |
 | Dashboard (Next.js) | Vercel (free)           | `apps/dashboard`.                      |
 | **API (Fastify)**   | Vercel (free)           | `apps/api`. Serverless function. $0.   |
-| Worker              | **later**               | `apps/worker` — Phase-1 stub for now.  |
+| Memory extractor    | GitHub Actions (free)   | `apps/worker extract`, cron — see §7.  |
 | **Login provider**  | Google / GitHub / OIDC  | Prod turns dev-login OFF; you need ≥1. |
 | CLI                 | each developer's laptop | Points `BATON_API_URL` at the API.     |
 
@@ -241,11 +241,41 @@ dashboard shows all machines together.
 
 ---
 
-## 7. Worker (later)
+## 7. Worker
 
-`apps/worker` is a heartbeat-only stub today (durable jobs = Phase 2). Unlike
-the API, it is a **long-running background loop**, not request/response, so it
-does not fit Vercel serverless. When durable jobs land, run
-`apps/worker/Dockerfile` on a container host (Fly/Render) — or drive the work
-from a scheduler (e.g. Vercel Cron hitting an internal endpoint) — with the same
-`DATABASE_URL`. It needs no inbound port.
+`apps/worker` has two entry points:
+
+- **`start`** — the long-running heartbeat loop (Phase-1 stub). It does not fit
+  Vercel serverless; when durable streaming jobs land, run
+  `apps/worker/Dockerfile` on a container host (Fly/Render) with the same
+  `DATABASE_URL`. It needs no inbound port.
+- **`extract`** — the managed-model **memory extractor**: a one-shot batch that
+  reads newly captured messages, asks Claude to propose durable preference
+  candidates, and records them for approval in the dashboard `/memory` inbox.
+  Nothing here approves a memory — a person still does.
+
+### Memory extraction — $0, scheduled on GitHub Actions
+
+The extractor runs as `.github/workflows/extract-memories.yml` on a cron
+schedule (every 2 hours) — no always-on host, so it stays inside the free tier.
+A per-tenant cursor means Claude is only called when new events have arrived, so
+a quiet account costs nothing beyond the runner minute. It runs as the normal
+(non-superuser) role under row-level security, one tenant at a time — it never
+bypasses tenant isolation.
+
+Configure once, in the GitHub repo:
+
+- **Secrets** → `NEON_DIRECT_URL` (already set for migrations, reused here) and
+  `ANTHROPIC_API_KEY`. Without the key the job is a clean no-op.
+- **Variables** (optional) → `BATON_EXTRACTION_MODEL` (default `claude-opus-5`),
+  `BATON_EXTRACTION_WINDOW` (recent messages per project, default 200),
+  `BATON_EXTRACTION_MAX_PROJECTS` (default 100).
+
+> Cost note: each run spends Anthropic tokens only for tenants with new
+> messages. `claude-opus-5` is the default for quality; set
+> `BATON_EXTRACTION_MODEL=claude-sonnet-5` (or `claude-haiku-4-5`) to trade some
+> quality for lower per-run cost. Trigger a first pass manually from **Actions →
+> extract-memories → Run workflow**.
+
+To run it locally instead:
+`ANTHROPIC_API_KEY=… DATABASE_URL=… pnpm --filter @baton/worker... build && pnpm --filter @baton/worker extract`.

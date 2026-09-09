@@ -1,25 +1,52 @@
 {
-  "name": "@baton/cli",
-  "version": "0.0.0",
-  "private": true,
+  "name": "baton-cloud",
+  "version": "0.5.1",
+  "description": "Baton — portable working memory for coding agents. Capture, sync, and resume context across Claude Code, Codex, and OpenCode.",
+  "license": "UNLICENSED",
+  "homepage": "https://baton.ramankumar.space",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raman-0O7/baton.git",
+    "directory": "apps/cli"
+  },
+  "keywords": [
+    "baton",
+    "coding-agent",
+    "claude-code",
+    "codex",
+    "opencode",
+    "mcp",
+    "context",
+    "memory"
+  ],
   "type": "module",
   "bin": {
     "baton": "./dist/main.js",
     "baton-cloud": "./dist/main.js"
   },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "node build.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "dev": "node --enable-source-maps dist/main.js"
   },
-  "dependencies": {
+  "devDependencies": {
     "@baton/capture": "workspace:*",
     "@baton/cloud-client": "workspace:*",
     "@baton/config": "workspace:*",
     "@baton/mcp": "workspace:*",
     "@baton/protocol": "workspace:*",
     "@baton/sync": "workspace:*",
-    "@modelcontextprotocol/sdk": "1.30.0"
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "esbuild": "0.28.2"
   }
 }

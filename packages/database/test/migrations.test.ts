@@ -51,3 +51,31 @@ describe('Phase 1 identity migration', () => {
     expect(sql).not.toContain('raw_transcript');
   });
 });
+
+describe('Phase 7 memory extraction migration', () => {
+  const url = new URL(
+    '../migrations/0005_phase7_memory_extraction.sql',
+    import.meta.url,
+  );
+
+  it('creates the per-tenant extraction cursor table', async () => {
+    const sql = await readFile(url, 'utf8');
+    expect(sql).toContain('CREATE TABLE "memory_extraction_state"');
+    expect(sql).toContain('"tenant_id" uuid PRIMARY KEY NOT NULL');
+    expect(sql).toContain('"last_ingested_at" timestamp with time zone');
+  });
+
+  it('enforces the same tenant row-level security as every scoped table', async () => {
+    const sql = await readFile(url, 'utf8');
+    expect(sql).toContain(
+      'ALTER TABLE "memory_extraction_state" ENABLE ROW LEVEL SECURITY',
+    );
+    expect(sql).toContain(
+      'ALTER TABLE "memory_extraction_state" FORCE ROW LEVEL SECURITY',
+    );
+    expect(sql).toContain(
+      'CREATE POLICY "memory_extraction_state_tenant_isolation"',
+    );
+    expect(sql).toContain("current_setting('baton.tenant_id', true)");
+  });
+});

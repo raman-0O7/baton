@@ -187,7 +187,7 @@ export function loadApiConfig(environment: NodeJS.ProcessEnv): ApiConfig {
 
 const CliEnvironmentSchema = z
   .object({
-    BATON_API_URL: z.url().default('https://api.baton.dev'),
+    BATON_API_URL: z.url().default('https://baton-api.ramankumar.space'),
     BATON_CREDENTIAL_STORE: z.enum(['auto', 'file']).default('auto'),
     BATON_STATE_PATH: z.string().min(1).optional(),
     BATON_CLAUDE_PROJECTS_DIR: z.string().min(1).optional(),

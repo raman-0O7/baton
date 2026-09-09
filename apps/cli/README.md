@@ -15,8 +15,9 @@ Requires Node.js ≥ 22. The command is installed as `baton` (and `baton-cloud`)
 
 ## Point it at your cloud
 
-The CLI talks to a Baton Cloud API. Set the URL once (defaults to
-`https://api.baton.dev`):
+The CLI talks to a Baton Cloud API. It defaults to
+`https://baton-api.ramankumar.space`; override it to run against your own
+deployment:
 
 ```bash
 export BATON_API_URL=https://your-baton-api.example.com

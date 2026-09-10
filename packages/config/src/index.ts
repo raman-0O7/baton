@@ -252,20 +252,25 @@ const WorkerEnvironmentSchema = z
       .min(1_000)
       .max(300_000)
       .default(30_000),
-    ANTHROPIC_API_KEY: z.string().min(1).optional(),
-    BATON_EXTRACTION_MODEL: z.string().min(1).default('claude-opus-5'),
-    BATON_EXTRACTION_WINDOW: z.coerce
-      .number()
-      .int()
-      .min(10)
-      .max(1_000)
-      .default(200),
-    BATON_EXTRACTION_MAX_PROJECTS: z.coerce
-      .number()
-      .int()
-      .min(1)
-      .max(1_000)
-      .default(100),
+    // GitHub Actions injects an unset secret/variable as an empty string, not
+    // as an absent key — so treat "" as unset here, or a missing key/var would
+    // fail validation instead of falling back to the no-op/default path.
+    ANTHROPIC_API_KEY: z.preprocess(
+      emptyToUndefined,
+      z.string().min(1).optional(),
+    ),
+    BATON_EXTRACTION_MODEL: z.preprocess(
+      emptyToUndefined,
+      z.string().min(1).default('claude-opus-5'),
+    ),
+    BATON_EXTRACTION_WINDOW: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(10).max(1_000).default(200),
+    ),
+    BATON_EXTRACTION_MAX_PROJECTS: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(1).max(1_000).default(100),
+    ),
   })
   .passthrough();
 
@@ -286,6 +291,11 @@ export function loadWorkerConfig(environment: NodeJS.ProcessEnv): WorkerConfig {
 
 function stripTrailingSlash(value: string): string {
   return value.endsWith('/') ? value.slice(0, -1) : value;
+}
+
+/** Treat an empty string as an absent value, so schema defaults/optional apply. */
+function emptyToUndefined(value: unknown): unknown {
+  return value === '' ? undefined : value;
 }
 
 function requireValue(value: string | undefined): string {

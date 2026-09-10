@@ -74,6 +74,38 @@ describe('runtime configuration', () => {
     ).toBe(30_000);
   });
 
+  it('treats empty extraction env vars as unset (GitHub Actions injects "")', () => {
+    const config = loadWorkerConfig({
+      DATABASE_URL: 'postgres://localhost/baton',
+      ANTHROPIC_API_KEY: '',
+      BATON_EXTRACTION_MODEL: '',
+      BATON_EXTRACTION_WINDOW: '',
+      BATON_EXTRACTION_MAX_PROJECTS: '',
+    });
+    expect(config.extraction).toEqual({
+      anthropicApiKey: null,
+      model: 'claude-opus-5',
+      windowPerProject: 200,
+      maxProjectsPerRun: 100,
+    });
+  });
+
+  it('reads extraction overrides when the env vars are set', () => {
+    const config = loadWorkerConfig({
+      DATABASE_URL: 'postgres://localhost/baton',
+      ANTHROPIC_API_KEY: 'sk-ant-test',
+      BATON_EXTRACTION_MODEL: 'claude-sonnet-5',
+      BATON_EXTRACTION_WINDOW: '50',
+      BATON_EXTRACTION_MAX_PROJECTS: '5',
+    });
+    expect(config.extraction).toEqual({
+      anthropicApiKey: 'sk-ant-test',
+      model: 'claude-sonnet-5',
+      windowPerProject: 50,
+      maxProjectsPerRun: 5,
+    });
+  });
+
   it('accepts explicit native-agent and operational-state locations', () => {
     expect(
       loadCliConfig({

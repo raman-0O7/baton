@@ -20,9 +20,11 @@
 name: extract-memories
 
 on:
-  schedule:
-    # Every 2 hours. Extraction is not latency-sensitive; tune to taste.
-    - cron: "0 */2 * * *"
+  # The scheduled trigger is intentionally disabled until an ANTHROPIC_API_KEY
+  # secret exists — otherwise it would fire every couple of hours with nothing
+  # to do. Once the key is set, uncomment the schedule to run it automatically.
+  # schedule:
+  #   - cron: "0 */2 * * *"   # every 2 hours; extraction is not latency-sensitive
   workflow_dispatch:
 
 # Never let two extraction runs overlap.
